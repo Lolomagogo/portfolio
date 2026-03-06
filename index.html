@@ -45,7 +45,7 @@ body{background:var(--bg);color:var(--text)}
 
 /* ── BOTTOM NAV ── */
 #botnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--tbg);backdrop-filter:blur(32px) saturate(180%);-webkit-backdrop-filter:blur(32px) saturate(180%);border-top:1px solid var(--border);display:flex;padding-bottom:max(env(safe-area-inset-bottom,0px),4px);transition:background .35s}
-.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 2px 7px;gap:4px;background:none;border:none;color:var(--icon-off);font-size:10.5px;font-weight:500;min-height:52px;cursor:pointer;transition:color .2s}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 2px 7px;gap:4px;background:none;border:none;color:var(--icon-off);font-size:12px;font-weight:500;text-transform:none;letter-spacing:0;min-height:52px;cursor:pointer;transition:color .2s}
 .nb.active{color:var(--blue)}
 .nb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke-width .2s}
 .nb.active svg{stroke-width:2.1}
@@ -229,7 +229,7 @@ body{background:var(--bg);color:var(--text)}
       </div>
     </div>
 
-    <!-- KPI 2×2 -->
+    <!-- KPI 2×2 — 4 métriques secondaires -->
     <div class="kpi-grid">
       <div class="kc">
         <div class="kc-accent" id="a3"></div>
@@ -243,17 +243,31 @@ body{background:var(--bg);color:var(--text)}
         <div id="kpi5" class="kc-val">—</div>
         <div id="kpi5b" class="kc-sub">—</div>
       </div>
-      <div class="kc" style="grid-column:1/-1">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <div class="sec-title">Performance du jour</div>
-          <div id="tmKpis" style="font-size:11px;color:var(--text3)"></div>
-        </div>
-        <svg id="treemapSvg" width="100%" height="172"></svg>
-        <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:10px;font-size:10px;color:var(--text3)">
-          <span style="display:flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#14532d"></i>&gt;+2%</span>
-          <span style="display:flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#16a34a"></i>0→+2%</span>
-          <span style="display:flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#b91c1c"></i>Négatif</span>
-        </div>
+      <div class="kc">
+        <div class="kc-accent" style="background:linear-gradient(90deg,#6366f1,#8b5cf6)"></div>
+        <div class="kc-label">Positions</div>
+        <div id="kpi6" class="kc-val">—</div>
+        <div class="kc-sub">Lignes actives</div>
+      </div>
+      <div class="kc">
+        <div class="kc-accent" id="a7" style="background:linear-gradient(90deg,#f59e0b,#f97316)"></div>
+        <div class="kc-label">Top ligne</div>
+        <div id="kpi7" class="kc-val">—</div>
+        <div id="kpi7s" class="kc-sub">—</div>
+      </div>
+    </div>
+
+    <!-- TREEMAP — carte indépendante -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="sec-title">Performance du jour</div>
+        <div id="tmKpis" style="font-size:11px;color:var(--text3)"></div>
+      </div>
+      <svg id="treemapSvg" width="100%" height="172"></svg>
+      <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:10px;font-size:10px;color:var(--text3)">
+        <span style="display:flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#14532d"></i>&gt;+2%</span>
+        <span style="display:flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#16a34a"></i>0→+2%</span>
+        <span style="display:flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#b91c1c"></i>Négatif</span>
       </div>
     </div>
 
@@ -365,17 +379,22 @@ body{background:var(--bg);color:var(--text)}
       <div class="sec-title" style="margin-bottom:9px">Heatmap journalière</div>
       <div id="hmKpis" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;font-size:11px"></div>
       <div style="display:flex;gap:4px">
-        <div style="display:flex;flex-direction:column;gap:3px;margin-right:4px;padding-top:15px;flex-shrink:0">
-          <div style="height:12px"></div>
-          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px">L</div><div style="height:3px"></div>
-          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px">M</div><div style="height:3px"></div>
-          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px">M</div><div style="height:3px"></div>
-          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px">J</div><div style="height:3px"></div>
-          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px">V</div>
+        <!-- Labels jours : 7 lignes pour couvrir L→D, margin-top=17px = hauteur header mois -->
+        <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;margin-top:17px">
+          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px;display:flex;align-items:center">L</div>
+          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px;display:flex;align-items:center">M</div>
+          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px;display:flex;align-items:center">M</div>
+          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px;display:flex;align-items:center">J</div>
+          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px;display:flex;align-items:center">V</div>
+          <div style="height:14px"></div>
+          <div style="height:14px"></div>
         </div>
-        <div style="flex:1;overflow:hidden">
-          <div id="hmMonths" style="display:flex;margin-bottom:4px;height:13px"></div>
-          <div class="hm-scroll"><div class="hm-grid" id="hmGrid"></div></div>
+        <!-- Grid + mois dans le même conteneur scrollable -->
+        <div style="flex:1;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none">
+          <div style="display:inline-flex;flex-direction:column;min-width:100%">
+            <div id="hmMonths" style="position:relative;height:13px;margin-bottom:4px;"></div>
+            <div id="hmGrid" style="display:flex;gap:3px"></div>
+          </div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:5px;margin-top:11px;font-size:10px;color:var(--text3)">
@@ -514,10 +533,13 @@ function renderTreemap(){
     svgE("rect",{x:rx+.5,y:ry+.5,width:rw-1,height:rh-1,rx:9,fill:"none",stroke:"rgba(255,255,255,0.12)","stroke-width":1},sv);
     const cx=rx+rw/2,hasV=rh>44,cy=hasV?ry+rh/2-9:ry+rh/2;
     if(rw>24&&rh>14)svgT(sv,cx,cy,r.ticker,Math.min(13,rw/3.5,rh/2.5),"700","#fff");
-    if(rw>32&&hasV)svgT(sv,cx,ry+rh/2+Math.min(11,rw/5,rh/4)+4,(r.varJ>=0?"+":"")+r.varJ.toFixed(2)+"%",Math.min(11,rw/5,rh/4),"500","rgba(255,255,255,.85)");
+    if(rw>32&&hasV&&r.varJ!==0)svgT(sv,cx,ry+rh/2+Math.min(11,rw/5,rh/4)+4,(r.varJ>=0?"+":"")+r.varJ.toFixed(2)+"%",Math.min(11,rw/5,rh/4),"500","rgba(255,255,255,.85)");
     const hit=svgE("rect",{x:rx,y:ry,width:rw,height:rh,rx:9,fill:"transparent"},sv);
-    const gainJ=+(r.area*(r.varJ/100)).toFixed(2),vc=r.varJ>=0?"#1fd6a0":"#ff5271";
-    hit.addEventListener("touchstart",e=>{e.preventDefault();showTip(`<div style="font-weight:700;color:#eef2ff;margin-bottom:2px">${r.nom}</div><div style="color:#7b87a8;font-size:10px;margin-bottom:5px">${r.ticker} · ${r.rep}% du portefeuille</div><div style="color:${vc};font-weight:700;font-size:14px">${r.varJ>=0?"+":""}${r.varJ.toFixed(2)}%</div><div style="color:${vc}">${gainJ>=0?"+":""}${fmt(gainJ)}</div><div style="color:#4a566e;margin-top:3px;font-size:11px">Valeur : ${fmt(r.area)}</div>`);},{passive:false});
+    const gainJ=+(r.area*(r.varJ/100)).toFixed(2),vc=r.varJ>0?"#1fd6a0":r.varJ<0?"#ff5271":"#7b87a8";
+    const varLine=r.varJ===0
+      ?`<div style="color:var(--text3);font-size:11px;margin-top:2px">Variation jour non disponible</div>`
+      :`<div style="color:${vc};font-weight:700;font-size:14px">${r.varJ>=0?"+":""}${r.varJ.toFixed(2)}%</div><div style="color:${vc}">${gainJ>=0?"+":""}${fmt(gainJ)}</div>`;
+    hit.addEventListener("touchstart",e=>{e.preventDefault();showTip(`<div style="font-weight:700;color:#eef2ff;margin-bottom:2px">${r.nom}</div><div style="color:#7b87a8;font-size:10px;margin-bottom:5px">${r.ticker} · ${r.rep}% du portefeuille</div>${varLine}<div style="color:#4a566e;margin-top:4px;font-size:11px">Valeur : ${fmt(r.area)}</div>`);},{passive:false});
   });
   const gainJT=positions.reduce((s,p)=>s+p.quantite*p.cours*(p.varJ||0)/100,0);
   const tv2=positions.reduce((s,p)=>s+p.quantite*p.cours,0);
@@ -564,7 +586,17 @@ function mkLine(id,labels,vals,color){
   const ac=axisC(),gc=gridC();
   charts[id]=new Chart(el,{type:"line",data:{labels,datasets:[{data:vals,borderColor:color,borderWidth:2.2,backgroundColor:grad,fill:true,pointRadius:0,pointHoverRadius:5,pointHoverBackgroundColor:color,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.38}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
-      plugins:{legend:{display:false},tooltip:{...getTTP(),callbacks:{label:c=>fmt(c.parsed.y)}}},
+      plugins:{legend:{display:false},tooltip:{...getTTP(),callbacks:{
+        label:c=>{
+          const abs=fmt(c.parsed.y);
+          if(id==="miniChart"&&miniHistoData3m.length){
+            const base=miniMode==="valo"?miniHistoData3m[0].valo:miniHistoData3m[0].benef;
+            const delta=c.parsed.y-base;
+            return `${abs}  (${fmtShort(delta)})`;
+          }
+          return abs;
+        }
+      }}},
       scales:{x:{ticks:{color:ac,font:{size:9},maxTicksLimit:6,maxRotation:0},grid:{color:gc},border:{color:"rgba(0,0,0,0)"}},y:{ticks:{color:ac,font:{size:9},callback:v=>v>=1000?(v/1000).toFixed(0)+"k":v,maxTicksLimit:4},grid:{color:gc},border:{color:"rgba(0,0,0,0)"}}}
     }
   });
@@ -658,6 +690,16 @@ function render(){
   const k5=document.getElementById("kpi5");k5.textContent=(gainJT>=0?"+":"")+fmt(gainJT);k5.className="kc-val "+(gainJT>=0?"pos":"neg");
   document.getElementById("kpi5b").textContent=(varP>=0?"+":"")+varP.toFixed(2)+"% pondéré";
   const a5=document.getElementById("a5");if(a5)a5.style.background=gainJT>=0?"linear-gradient(90deg,#059669,#1fd6a0)":"linear-gradient(90deg,#dc2626,#ff5271)";
+
+  // KPI 6 — nb positions
+  document.getElementById("kpi6").textContent=positions.length;
+
+  // KPI 7 — meilleure ligne par perf %
+  const sortedBest=[...positions].sort((a,b)=>((b.cours-b.pr)/b.pr)-((a.cours-a.pr)/a.pr));
+  const bestP=sortedBest[0];
+  const bestPct=(bestP.cours-bestP.pr)/bestP.pr*100;
+  const k7=document.getElementById("kpi7");k7.textContent=bestP.ticker;k7.className="kc-val "+(bestPct>=0?"pos":"neg");
+  document.getElementById("kpi7s").textContent=fmtP(bestPct)+" · "+bestP.nom.split(" ").slice(0,2).join(" ");
 
   renderTreemap();renderGroupHeatmap("hmGeo","secteur",GEO_COLS);renderGroupHeatmap("hmType","type",TYPE_COLS);renderPerfChart();
   if(histoData.length)renderMiniHisto();
@@ -794,40 +836,68 @@ function renderHisto(months){
 }
 function renderHeatmap(){
   if(!histoData.length)return;
+  const CELL=14,GAP=3,STEP=CELL+GAP; // 17px par semaine (col width + gap)
   const grid=document.getElementById("hmGrid");grid.innerHTML="";
-  const months=document.getElementById("hmMonths");months.innerHTML="";
+  const monthsEl=document.getElementById("hmMonths");monthsEl.innerHTML="";
+
   const dataMap={};histoData.forEach(d=>dataMap[d.date.toISOString().slice(0,10)]=d.varJ);
-  const allVals=Object.values(dataMap),maxPos=Math.max(...allVals.filter(v=>v>0),1),maxNeg=Math.abs(Math.min(...allVals.filter(v=>v<0),-1));
-  function getColor(v){if(v===undefined)return isDark?"#181f33":"#dde3f0";if(Math.abs(v)<5)return isDark?"#242e47":"#c4cfe3";if(v>0){const i=v/maxPos;return i>0.5?"#14532d":i>0.2?"#15803d":"#16a34a";}const i=Math.abs(v)/maxNeg;return i>0.5?"#7f1d1d":i>0.2?"#b91c1c":"#ef4444";}
+  const allVals=Object.values(dataMap);
+  const maxPos=Math.max(...allVals.filter(v=>v>0),1);
+  const maxNeg=Math.abs(Math.min(...allVals.filter(v=>v<0),-1));
+  function getColor(v){
+    if(v===undefined)return isDark?"#181f33":"#dde3f0";
+    if(Math.abs(v)<5)return isDark?"#242e47":"#c4cfe3";
+    if(v>0){const i=v/maxPos;return i>0.5?"#14532d":i>0.2?"#15803d":"#16a34a";}
+    const i=Math.abs(v)/maxNeg;return i>0.5?"#7f1d1d":i>0.2?"#b91c1c":"#ef4444";
+  }
+
   const startDate=new Date(histoData[0].date),endDate=new Date(histoData[histoData.length-1].date);
   const start=new Date(startDate);start.setDate(start.getDate()-((start.getDay()+6)%7));
-  let weekEl=null,lastMonth=-1,prevMonth=-1;const monthW=[];const cur=new Date(start);
+
+  let weekEl=null,weekCount=0,lastMonth=-1;
+  const monthPositions=[];
+  const cur=new Date(start);
+
   while(cur<=endDate){
-    const dow=(cur.getDay()+6)%7;
+    const dow=(cur.getDay()+6)%7; // 0=Lun…6=Dim
     if(dow===0){
-      const m=cur.getMonth();
-      if(weekEl&&m!==prevMonth){const sep=document.createElement("div");sep.className="hm-sep";grid.appendChild(sep);}
-      prevMonth=m;weekEl=document.createElement("div");weekEl.className="hm-week";grid.appendChild(weekEl);
-      if(m!==lastMonth){monthW.push({label:cur.toLocaleDateString("fr-FR",{month:"short"})});lastMonth=m;}
+      weekEl=document.createElement("div");weekEl.className="hm-week";grid.appendChild(weekEl);
+      const m=cur.getMonth(),y=cur.getFullYear();
+      if(m!==lastMonth){
+        const label=cur.toLocaleDateString("fr-FR",{month:"short"})+" "+String(y).slice(2);
+        monthPositions.push({label,weekIndex:weekCount});lastMonth=m;
+      }
+      weekCount++;
     }
     if(!weekEl){cur.setDate(cur.getDate()+1);continue;}
     const isWE=dow>=5,key=cur.toISOString().slice(0,10),hasData=dataMap.hasOwnProperty(key),v=hasData?dataMap[key]:undefined;
     const cell=document.createElement("div");cell.className="hm-day";
-    cell.style.background=isWE?(isDark?"#0d1017":"#e2eaf5"):getColor(v);cell.style.opacity=isWE?"0.3":"1";
+    cell.style.background=isWE?(isDark?"#0d1017":"#e2eaf5"):getColor(v);
+    cell.style.opacity=isWE?"0.2":"1";
     if(!isWE&&hasData){
-      const ds=cur.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long"}),vs=(v>=0?"+":"")+v.toFixed(2)+" €",vc=v>=0?"#1fd6a0":"#ff5271";
-      cell.addEventListener("touchstart",e=>{e.preventDefault();showTip(`<div style='color:#7b87a8;font-size:11px;margin-bottom:2px'>${ds}</div><div style='font-weight:700;color:${vc}'>${vs}</div>`);},{passive:false});
+      const ds=cur.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long",year:"numeric"});
+      const vs=(v>=0?"+":"")+v.toFixed(2)+" €",vc=v>0?"#1fd6a0":v<0?"#ff5271":"#7b87a8";
+      const handler=(e)=>{e.preventDefault();e.stopPropagation();showTip(`<div style='color:#7b87a8;font-size:11px;margin-bottom:3px'>${ds}</div><div style='font-weight:800;color:${vc};font-size:15px'>${vs}</div>`);};
+      cell.addEventListener("touchstart",handler,{passive:false});
+      cell.addEventListener("click",handler);
     }
     weekEl.appendChild(cell);cur.setDate(cur.getDate()+1);
   }
-  monthW.forEach(({label})=>{const span=document.createElement("span");span.style.cssText="font-size:9px;color:var(--text3);width:50px;flex-shrink:0;";span.textContent=label;months.appendChild(span);});
+
+  // Labels mois positionnés absolument, synchronisés avec le scroll
+  monthPositions.forEach(({label,weekIndex})=>{
+    const span=document.createElement("span");
+    span.style.cssText=`position:absolute;left:${weekIndex*STEP}px;font-size:9px;font-weight:600;color:var(--text3);white-space:nowrap;line-height:13px;`;
+    span.textContent=label;monthsEl.appendChild(span);
+  });
+
   const pos=allVals.filter(v=>v>0).length,neg2=allVals.filter(v=>v<0).length;
   const best=histoData.reduce((a,b)=>b.varJ>a.varJ?b:a),worst=histoData.reduce((a,b)=>b.varJ<a.varJ?b:a);
   const pg=isDark?"#1fd6a0":"#059669",pr=isDark?"#ff5271":"#e02847";
   document.getElementById("hmKpis").innerHTML=`
     <div style="color:${pg};font-weight:700">🟩 ${pos} jours</div><div style="color:${pr};font-weight:700">🟥 ${neg2} jours</div>
-    <div style="color:${pg}">Meilleur <b>+${best.varJ.toFixed(0)}€</b> <span style="color:var(--text4)">${best.date.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})}</span></div>
-    <div style="color:${pr}">Pire <b>${worst.varJ.toFixed(0)}€</b> <span style="color:var(--text4)">${worst.date.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})}</span></div>`;
+    <div style="color:${pg}">Meilleur <b>+${best.varJ.toFixed(0)}€</b> <span style="color:var(--text4)">${best.date.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"2-digit"})}</span></div>
+    <div style="color:${pr}">Pire <b>${worst.varJ.toFixed(0)}€</b> <span style="color:var(--text4)">${worst.date.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"2-digit"})}</span></div>`;
 }
 
 /* ── FETCH TRANSAC ── */
