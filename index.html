@@ -45,7 +45,7 @@ body{background:var(--bg);color:var(--text)}
 
 /* ── BOTTOM NAV ── */
 #botnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--tbg);backdrop-filter:blur(32px) saturate(180%);-webkit-backdrop-filter:blur(32px) saturate(180%);border-top:1px solid var(--border);display:flex;padding-bottom:max(env(safe-area-inset-bottom,0px),4px);transition:background .35s}
-.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 2px 7px;gap:4px;background:none;border:none;color:var(--icon-off);font-size:12px;font-weight:500;text-transform:none;letter-spacing:0;min-height:52px;cursor:pointer;transition:color .2s}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 2px 7px;gap:4px;background:none;border:none;color:var(--icon-off);font-size:10.5px;font-weight:500;min-height:52px;cursor:pointer;transition:color .2s}
 .nb.active{color:var(--blue)}
 .nb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke-width .2s}
 .nb.active svg{stroke-width:2.1}
@@ -229,7 +229,7 @@ body{background:var(--bg);color:var(--text)}
       </div>
     </div>
 
-    <!-- KPI 2×2 — 4 métriques secondaires -->
+    <!-- KPI 2×2 -->
     <div class="kpi-grid">
       <div class="kc">
         <div class="kc-accent" id="a3"></div>
@@ -243,31 +243,17 @@ body{background:var(--bg);color:var(--text)}
         <div id="kpi5" class="kc-val">—</div>
         <div id="kpi5b" class="kc-sub">—</div>
       </div>
-      <div class="kc">
-        <div class="kc-accent" style="background:linear-gradient(90deg,#6366f1,#8b5cf6)"></div>
-        <div class="kc-label">Positions</div>
-        <div id="kpi6" class="kc-val">—</div>
-        <div class="kc-sub">Lignes actives</div>
-      </div>
-      <div class="kc">
-        <div class="kc-accent" id="a7" style="background:linear-gradient(90deg,#f59e0b,#f97316)"></div>
-        <div class="kc-label">Top ligne</div>
-        <div id="kpi7" class="kc-val">—</div>
-        <div id="kpi7s" class="kc-sub">—</div>
-      </div>
-    </div>
-
-    <!-- TREEMAP — carte indépendante -->
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <div class="sec-title">Performance du jour</div>
-        <div id="tmKpis" style="font-size:11px;color:var(--text3)"></div>
-      </div>
-      <svg id="treemapSvg" width="100%" height="172"></svg>
-      <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:10px;font-size:10px;color:var(--text3)">
-        <span style="display:flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#14532d"></i>&gt;+2%</span>
-        <span style="display:flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#16a34a"></i>0→+2%</span>
-        <span style="display:flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#b91c1c"></i>Négatif</span>
+      <div class="kc" style="grid-column:1/-1">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="sec-title">Performance du jour</div>
+          <div id="tmKpis" style="font-size:11px;color:var(--text3)"></div>
+        </div>
+        <svg id="treemapSvg" width="100%" height="172"></svg>
+        <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:10px;font-size:10px;color:var(--text3)">
+          <span style="display:flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#14532d"></i>&gt;+2%</span>
+          <span style="display:flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#16a34a"></i>0→+2%</span>
+          <span style="display:flex;align-items:center;gap:3px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#b91c1c"></i>Négatif</span>
+        </div>
       </div>
     </div>
 
@@ -306,17 +292,8 @@ body{background:var(--bg);color:var(--text)}
 
   <!-- POSITIONS -->
   <div id="tab-positions" class="tab-content hidden">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+    <div style="margin-bottom:13px">
       <div style="font-size:12px;font-weight:700;color:var(--text3)"><span id="nbLignes2">9</span> lignes · PEA</div>
-      <button class="btn btn-blue btn-sm" onclick="toggleAddForm()">+ Ajouter</button>
-    </div>
-    <div id="addForm" class="card hidden" style="margin-bottom:11px">
-      <div style="font-size:14px;font-weight:800;margin-bottom:13px;color:var(--text)">Nouvelle position</div>
-      <div class="form-row"><div><div class="fl">Nom</div><input id="fNom" class="fi" placeholder="ex: Amundi World"/></div><div><div class="fl">Ticker</div><input id="fTicker" class="fi" placeholder="ex: WPEA"/></div></div>
-      <div class="form-row"><div><div class="fl">Secteur</div><input id="fSecteur" class="fi" placeholder="ex: WORLD"/></div><div><div class="fl">ISIN</div><input id="fIsin" class="fi" placeholder="ex: FR…"/></div></div>
-      <div class="form-row"><div><div class="fl">Type</div><select id="fType" class="fi"><option>ETF</option><option>ACTION</option><option>ETC</option><option>OBLIGATION</option></select></div><div><div class="fl">Quantité</div><input id="fQte" class="fi" type="number"/></div></div>
-      <div class="form-row"><div><div class="fl">Prix revient €</div><input id="fPr" class="fi" type="number" step="0.01"/></div><div><div class="fl">Cours €</div><input id="fCours" class="fi" type="number" step="0.01"/></div></div>
-      <div style="display:flex;gap:8px;margin-top:6px"><button class="btn btn-green" style="flex:1" onclick="addPosition()">Ajouter</button><button class="btn btn-dark" style="flex:1" onclick="toggleAddForm()">Annuler</button></div>
     </div>
     <div id="posCards"></div>
     <div class="card" style="margin-bottom:4px">
@@ -379,22 +356,17 @@ body{background:var(--bg);color:var(--text)}
       <div class="sec-title" style="margin-bottom:9px">Heatmap journalière</div>
       <div id="hmKpis" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;font-size:11px"></div>
       <div style="display:flex;gap:4px">
-        <!-- Labels jours : 7 lignes pour couvrir L→D, margin-top=17px = hauteur header mois -->
-        <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;margin-top:17px">
-          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px;display:flex;align-items:center">L</div>
-          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px;display:flex;align-items:center">M</div>
-          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px;display:flex;align-items:center">M</div>
-          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px;display:flex;align-items:center">J</div>
-          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px;display:flex;align-items:center">V</div>
-          <div style="height:14px"></div>
-          <div style="height:14px"></div>
+        <div style="display:flex;flex-direction:column;gap:3px;margin-right:4px;padding-top:15px;flex-shrink:0">
+          <div style="height:12px"></div>
+          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px">L</div><div style="height:3px"></div>
+          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px">M</div><div style="height:3px"></div>
+          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px">M</div><div style="height:3px"></div>
+          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px">J</div><div style="height:3px"></div>
+          <div style="height:14px;font-size:9px;color:var(--text3);line-height:14px">V</div>
         </div>
-        <!-- Grid + mois dans le même conteneur scrollable -->
-        <div style="flex:1;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none">
-          <div style="display:inline-flex;flex-direction:column;min-width:100%">
-            <div id="hmMonths" style="position:relative;height:13px;margin-bottom:4px;"></div>
-            <div id="hmGrid" style="display:flex;gap:3px"></div>
-          </div>
+        <div style="flex:1;overflow:hidden">
+          <div id="hmMonths" style="display:flex;margin-bottom:4px;height:13px"></div>
+          <div class="hm-scroll"><div class="hm-grid" id="hmGrid"></div></div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:5px;margin-top:11px;font-size:10px;color:var(--text3)">
@@ -404,15 +376,36 @@ body{background:var(--bg);color:var(--text)}
     <div id="histoErr" style="font-size:11px;color:var(--red);margin-bottom:8px"></div>
   </div>
 
+  <!-- DIVIDENDES -->
+  <div id="tab-dividendes" class="tab-content hidden">
+    <div id="divKpis" class="kpi-grid" style="margin-bottom:11px"></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="sec-title">Dividendes / mois</div>
+        <div id="divMonthBadge" class="chart-badge" style="color:var(--green)">—</div>
+      </div>
+      <div style="height:108px"><canvas id="chartDivMonth"></canvas></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="sec-title">Répartition par ligne</div>
+        <div id="divTickerBadge" class="chart-badge" style="color:var(--green)">—</div>
+      </div>
+      <div style="height:100px"><canvas id="chartDivTicker"></canvas></div>
+    </div>
+    <div id="divCards"></div>
+    <div id="divErr" style="font-size:11px;color:var(--red);margin-bottom:8px"></div>
+  </div>
+
   <!-- IA -->
   <div id="tab-ia" class="tab-content hidden">
     <div class="warn-box">⚠️ Remplacez <code style="color:#f59e0b;background:rgba(245,158,11,.12);padding:1px 5px;border-radius:5px">VOTRE_CLE_API_ICI</code> — <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue)">console.anthropic.com</a></div>
     <div class="ai-grid">
-      <button class="ai-btn" id="btn-analyse" onclick="callClaude('analyse')"><div style="font-size:26px;margin-bottom:8px">🔍</div><div style="font-size:12px;font-weight:700">Analyse</div><div style="font-size:10px;color:var(--text3);margin-top:3px">Synthèse</div></button>
-      <button class="ai-btn" id="btn-rapport" onclick="callClaude('rapport')"><div style="font-size:26px;margin-bottom:8px">📄</div><div style="font-size:12px;font-weight:700">Rapport</div><div style="font-size:10px;color:var(--text3);margin-top:3px">Performance</div></button>
-      <button class="ai-btn" id="btn-alertes" onclick="callClaude('alertes')"><div style="font-size:26px;margin-bottom:8px">🚨</div><div style="font-size:12px;font-weight:700">Alertes</div><div style="font-size:10px;color:var(--text3);margin-top:3px">Risques</div></button>
+      <button class="ai-btn" id="btn-analyse" onclick="callClaude('analyse')"><div style="margin-bottom:8px;display:flex;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div style="font-size:12px;font-weight:700">Analyse</div><div style="font-size:10px;color:var(--text3);margin-top:3px">Synthèse</div></button>
+      <button class="ai-btn" id="btn-rapport" onclick="callClaude('rapport')"><div style="margin-bottom:8px;display:flex;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><div style="font-size:12px;font-weight:700">Rapport</div><div style="font-size:10px;color:var(--text3);margin-top:3px">Performance</div></button>
+      <button class="ai-btn" id="btn-alertes" onclick="callClaude('alertes')"><div style="margin-bottom:8px;display:flex;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div style="font-size:12px;font-weight:700">Alertes</div><div style="font-size:10px;color:var(--text3);margin-top:3px">Risques</div></button>
     </div>
-    <div id="aiLoading" class="card hidden" style="text-align:center;padding:40px"><div style="font-size:28px;display:inline-block;animation:rot .9s linear infinite;margin-bottom:12px">⏳</div><div style="font-size:13px;color:var(--text3)">Claude analyse votre portefeuille…</div></div>
+    <div id="aiLoading" class="card hidden" style="text-align:center;padding:40px"><div style="display:flex;justify-content:center;margin-bottom:12px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:rot .9s linear infinite"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg></div><div style="font-size:13px;color:var(--text3)">Claude analyse votre portefeuille…</div></div>
     <div id="aiResult" class="card hidden">
       <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px;padding-bottom:13px;border-bottom:1px solid var(--border)">
         <div style="width:28px;height:28px;background:linear-gradient(135deg,#4d8ffc,#7c3aed);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;color:#fff">C</div>
@@ -421,7 +414,7 @@ body{background:var(--bg);color:var(--text)}
       <div id="aiText" style="font-size:13px;line-height:1.9;color:var(--text2);white-space:pre-wrap"></div>
     </div>
     <div id="aiEmpty" class="card" style="text-align:center;padding:52px 24px">
-      <div style="font-size:44px;margin-bottom:13px">🤖</div>
+      <div style="display:flex;justify-content:center;margin-bottom:13px"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--text4)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.3 6l-.7 5H9l-.7-5A7 7 0 0 1 5 9a7 7 0 0 1 7-7z"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div>
       <div style="font-size:15px;font-weight:800;color:var(--text)">Sélectionnez une analyse</div>
       <div style="font-size:12px;color:var(--text3);margin-top:6px;line-height:1.6">Claude utilisera les données actuelles de votre portefeuille</div>
     </div>
@@ -443,6 +436,10 @@ body{background:var(--bg);color:var(--text)}
     <svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg>
     <span>Transac.</span>
   </button>
+  <button class="nb" onclick="showTab('dividendes',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.8 9A2 2 0 0 0 13 8h-2a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4h-2a2 2 0 0 1-1.8-1"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>
+    <span>Divid.</span>
+  </button>
   <button class="nb" onclick="showTab('historique',this)">
     <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     <span>Historique</span>
@@ -457,23 +454,25 @@ body{background:var(--bg);color:var(--text)}
 const SHEET_ID="1j1dpz93jhfPNQS00a37VmAsQd7ni07caiogL7MCxVLg";
 const HISTO_GID="100093739";
 const TRANSAC_GID="2083554924";
+const DIVID_GID="239305313";
 const TICKER_MAP={"EPA:GOLD":"GOLD","EPA:ESE":"ESE","EPA:AI":"AI","EPA:EUDV":"EUDV"};
 const GEO_COLS={OR:"#b45309",EUROPE:"#1d4ed8",EMERGING:"#047857",USA:"#7c3aed",WORLD:"#0e7490"};
 const TYPE_COLS={ETF:"#1d4ed8",ACTION:"#7c3aed",ETC:"#b45309",OBLIGATION:"#065f46"};
 
+// Métadonnées fixes — quantite/pr/cours chargés dynamiquement depuis le sheet
 let positions=[
-  {id:1,nom:"Amundi Physical Gold ETC",secteur:"OR",type:"ETC",ticker:"GOLD",isin:"FR0013416716",quantite:15,pr:107.08,cours:175.41,varJ:0},
-  {id:2,nom:"BNP Easy Stoxx Europe 600",secteur:"EUROPE",type:"ETF",ticker:"ETZ",isin:"FR0011550193",quantite:60,pr:15.98,cours:19.82,varJ:0},
-  {id:3,nom:"Amundi PEA MSCI Emerging Markets ESG",secteur:"EMERGING",type:"ETF",ticker:"PAEEM",isin:"FR0013412020",quantite:80,pr:28.30,cours:30.82,varJ:0},
-  {id:4,nom:"Amundi PEA Nasdaq-100",secteur:"USA",type:"ETF",ticker:"PUST",isin:"FR0011871110",quantite:5,pr:79.03,cours:86.31,varJ:0},
-  {id:5,nom:"HSBC EURO STOXX 50 ETF",secteur:"EUROPE",type:"ETF",ticker:"50E",isin:"IE00B4K6B022",quantite:40,pr:55.38,cours:61.67,varJ:0},
-  {id:6,nom:"SPDR Euro Dividend Aristocrats",secteur:"EUROPE",type:"ETF",ticker:"EUDV",isin:"IE00B5M1WJ87",quantite:46,pr:27.04,cours:28.50,varJ:0},
-  {id:7,nom:"iShares MSCI World Swap PEA",secteur:"WORLD",type:"ETF",ticker:"WPEA",isin:"IE0002XZSHO1",quantite:1000,pr:5.60,cours:6.23,varJ:0},
-  {id:8,nom:"BNP Easy S&P 500",secteur:"USA",type:"ETF",ticker:"ESE",isin:"FR0011550185",quantite:137,pr:28.16,cours:29.69,varJ:0},
-  {id:9,nom:"Air Liquide",secteur:"EUROPE",type:"ACTION",ticker:"AI",isin:"FR0000120171",quantite:10,pr:160.25,cours:172.36,varJ:0},
+  {id:1,nom:"Amundi Physical Gold ETC",secteur:"OR",type:"ETC",ticker:"GOLD",isin:"FR0013416716",quantite:0,pr:0,cours:0,varJ:0,rep:0},
+  {id:2,nom:"BNP Easy Stoxx Europe 600",secteur:"EUROPE",type:"ETF",ticker:"ETZ",isin:"FR0011550193",quantite:0,pr:0,cours:0,varJ:0,rep:0},
+  {id:3,nom:"Amundi PEA MSCI Emerging Markets ESG",secteur:"EMERGING",type:"ETF",ticker:"PAEEM",isin:"FR0013412020",quantite:0,pr:0,cours:0,varJ:0,rep:0},
+  {id:4,nom:"Amundi PEA Nasdaq-100",secteur:"USA",type:"ETF",ticker:"PUST",isin:"FR0011871110",quantite:0,pr:0,cours:0,varJ:0,rep:0},
+  {id:5,nom:"HSBC EURO STOXX 50 ETF",secteur:"EUROPE",type:"ETF",ticker:"50E",isin:"IE00B4K6B022",quantite:0,pr:0,cours:0,varJ:0,rep:0},
+  {id:6,nom:"SPDR Euro Dividend Aristocrats",secteur:"EUROPE",type:"ETF",ticker:"EUDV",isin:"IE00B5M1WJ87",quantite:0,pr:0,cours:0,varJ:0,rep:0},
+  {id:7,nom:"iShares MSCI World Swap PEA",secteur:"WORLD",type:"ETF",ticker:"WPEA",isin:"IE0002XZSHO1",quantite:0,pr:0,cours:0,varJ:0,rep:0},
+  {id:8,nom:"BNP Easy S&P 500",secteur:"USA",type:"ETF",ticker:"ESE",isin:"FR0011550185",quantite:0,pr:0,cours:0,varJ:0,rep:0},
+  {id:9,nom:"Air Liquide",secteur:"EUROPE",type:"ACTION",ticker:"AI",isin:"FR0000120171",quantite:0,pr:0,cours:0,varJ:0,rep:0},
 ];
 
-let charts={},histoData=[],transacData=[],isDark=true,miniMode='valo';
+let charts={},histoData=[],transacData=[],dividData=[],isDark=true,miniMode='valo';
 const fmt=n=>n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
 const fmtShort=n=>{const abs=Math.abs(n);const s=n<0?"-":"+";if(abs>=1000)return s+(abs/1000).toFixed(1)+"k €";return s+abs.toFixed(2)+" €";}
 const fmtP=n=>(n>=0?"+":"")+n.toFixed(2)+"%";
@@ -497,6 +496,7 @@ window.toggleTheme=function(){
   const t=m?m[1]:"overview";
   if(t==="overview")render();
   if(t==="transactions"&&transacData.length)renderTransac();
+  if(t==="dividendes"&&dividData.length)renderDividendes();
   if(t==="historique"&&histoData.length)renderHisto(0);
 };
 
@@ -533,13 +533,10 @@ function renderTreemap(){
     svgE("rect",{x:rx+.5,y:ry+.5,width:rw-1,height:rh-1,rx:9,fill:"none",stroke:"rgba(255,255,255,0.12)","stroke-width":1},sv);
     const cx=rx+rw/2,hasV=rh>44,cy=hasV?ry+rh/2-9:ry+rh/2;
     if(rw>24&&rh>14)svgT(sv,cx,cy,r.ticker,Math.min(13,rw/3.5,rh/2.5),"700","#fff");
-    if(rw>32&&hasV&&r.varJ!==0)svgT(sv,cx,ry+rh/2+Math.min(11,rw/5,rh/4)+4,(r.varJ>=0?"+":"")+r.varJ.toFixed(2)+"%",Math.min(11,rw/5,rh/4),"500","rgba(255,255,255,.85)");
+    if(rw>32&&hasV)svgT(sv,cx,ry+rh/2+Math.min(11,rw/5,rh/4)+4,(r.varJ>=0?"+":"")+r.varJ.toFixed(2)+"%",Math.min(11,rw/5,rh/4),"500","rgba(255,255,255,.85)");
     const hit=svgE("rect",{x:rx,y:ry,width:rw,height:rh,rx:9,fill:"transparent"},sv);
-    const gainJ=+(r.area*(r.varJ/100)).toFixed(2),vc=r.varJ>0?"#1fd6a0":r.varJ<0?"#ff5271":"#7b87a8";
-    const varLine=r.varJ===0
-      ?`<div style="color:var(--text3);font-size:11px;margin-top:2px">Variation jour non disponible</div>`
-      :`<div style="color:${vc};font-weight:700;font-size:14px">${r.varJ>=0?"+":""}${r.varJ.toFixed(2)}%</div><div style="color:${vc}">${gainJ>=0?"+":""}${fmt(gainJ)}</div>`;
-    hit.addEventListener("touchstart",e=>{e.preventDefault();showTip(`<div style="font-weight:700;color:#eef2ff;margin-bottom:2px">${r.nom}</div><div style="color:#7b87a8;font-size:10px;margin-bottom:5px">${r.ticker} · ${r.rep}% du portefeuille</div>${varLine}<div style="color:#4a566e;margin-top:4px;font-size:11px">Valeur : ${fmt(r.area)}</div>`);},{passive:false});
+    const gainJ=+(r.area*(r.varJ/100)).toFixed(2),vc=r.varJ>=0?"#1fd6a0":"#ff5271";
+    hit.addEventListener("touchstart",e=>{e.preventDefault();showTip(`<div style="font-weight:700;color:#eef2ff;margin-bottom:2px">${r.nom}</div><div style="color:#7b87a8;font-size:10px;margin-bottom:5px">${r.ticker} · ${r.rep}% du portefeuille</div><div style="color:${vc};font-weight:700;font-size:14px">${r.varJ>=0?"+":""}${r.varJ.toFixed(2)}%</div><div style="color:${vc}">${gainJ>=0?"+":""}${fmt(gainJ)}</div><div style="color:#4a566e;margin-top:3px;font-size:11px">Valeur : ${fmt(r.area)}</div>`);},{passive:false});
   });
   const gainJT=positions.reduce((s,p)=>s+p.quantite*p.cours*(p.varJ||0)/100,0);
   const tv2=positions.reduce((s,p)=>s+p.quantite*p.cours,0);
@@ -586,17 +583,7 @@ function mkLine(id,labels,vals,color){
   const ac=axisC(),gc=gridC();
   charts[id]=new Chart(el,{type:"line",data:{labels,datasets:[{data:vals,borderColor:color,borderWidth:2.2,backgroundColor:grad,fill:true,pointRadius:0,pointHoverRadius:5,pointHoverBackgroundColor:color,pointHoverBorderColor:'#fff',pointHoverBorderWidth:2,tension:0.38}]},
     options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
-      plugins:{legend:{display:false},tooltip:{...getTTP(),callbacks:{
-        label:c=>{
-          const abs=fmt(c.parsed.y);
-          if(id==="miniChart"&&miniHistoData3m.length){
-            const base=miniMode==="valo"?miniHistoData3m[0].valo:miniHistoData3m[0].benef;
-            const delta=c.parsed.y-base;
-            return `${abs}  (${fmtShort(delta)})`;
-          }
-          return abs;
-        }
-      }}},
+      plugins:{legend:{display:false},tooltip:{...getTTP(),callbacks:{label:c=>fmt(c.parsed.y)}}},
       scales:{x:{ticks:{color:ac,font:{size:9},maxTicksLimit:6,maxRotation:0},grid:{color:gc},border:{color:"rgba(0,0,0,0)"}},y:{ticks:{color:ac,font:{size:9},callback:v=>v>=1000?(v/1000).toFixed(0)+"k":v,maxTicksLimit:4},grid:{color:gc},border:{color:"rgba(0,0,0,0)"}}}
     }
   });
@@ -691,16 +678,6 @@ function render(){
   document.getElementById("kpi5b").textContent=(varP>=0?"+":"")+varP.toFixed(2)+"% pondéré";
   const a5=document.getElementById("a5");if(a5)a5.style.background=gainJT>=0?"linear-gradient(90deg,#059669,#1fd6a0)":"linear-gradient(90deg,#dc2626,#ff5271)";
 
-  // KPI 6 — nb positions
-  document.getElementById("kpi6").textContent=positions.length;
-
-  // KPI 7 — meilleure ligne par perf %
-  const sortedBest=[...positions].sort((a,b)=>((b.cours-b.pr)/b.pr)-((a.cours-a.pr)/a.pr));
-  const bestP=sortedBest[0];
-  const bestPct=(bestP.cours-bestP.pr)/bestP.pr*100;
-  const k7=document.getElementById("kpi7");k7.textContent=bestP.ticker;k7.className="kc-val "+(bestPct>=0?"pos":"neg");
-  document.getElementById("kpi7s").textContent=fmtP(bestPct)+" · "+bestP.nom.split(" ").slice(0,2).join(" ");
-
   renderTreemap();renderGroupHeatmap("hmGeo","secteur",GEO_COLS);renderGroupHeatmap("hmType","type",TYPE_COLS);renderPerfChart();
   if(histoData.length)renderMiniHisto();
 }
@@ -722,10 +699,10 @@ function renderPositions(){
         <div style="flex:1;padding:14px 14px 14px 0">
           <div class="pc-hd">
             <div class="pc-name">${p.nom}</div>
-            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span class="badge ${badge}">${p.type}</span><button class="pc-del" onclick="removePos(${p.id})">×</button></div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span class="badge ${badge}">${p.type}</span></div>
           </div>
           <div class="pc-grid">
-            <div class="pc-cell"><div class="pc-cl">Cours</div><div class="pc-cv" id="cours-${p.id}" onclick="editCours(${p.id})" style="color:var(--blue);cursor:pointer">${p.cours.toFixed(2)} €</div></div>
+            <div class="pc-cell"><div class="pc-cl">Cours</div><div class="pc-cv" style="color:var(--blue)">${p.cours.toFixed(2)} €</div></div>
             <div class="pc-cell"><div class="pc-cl">Var. jour</div><div class="pc-cv ${jc}">${(p.varJ||0)>=0?"+":""}${(p.varJ||0).toFixed(2)}%<br><span style="font-size:10px;font-weight:500">${gainJ>=0?"+":""}${fmt(gainJ)}</span></div></div>
             <div class="pc-cell"><div class="pc-cl">Qté</div><div class="pc-cv">${p.quantite}</div></div>
             <div class="pc-cell"><div class="pc-cl">P.Rev.</div><div class="pc-cv" style="color:var(--text3)">${p.pr.toFixed(2)} €</div></div>
@@ -742,31 +719,17 @@ function renderPositions(){
   pt.textContent=(pnl>=0?"+":"")+fmt(pnl)+" · "+fmtP(pct)+(gainJT?" · Jour "+(gainJT>=0?"+":"")+fmt(gainJT):"");
   pt.className=pnl>=0?"pos":"neg";
 }
-function editCours(id){
-  const p=positions.find(x=>x.id===id);const cell=document.getElementById("cours-"+id);cell.onclick=null;
-  cell.innerHTML=`<div style='display:flex;gap:4px;align-items:center'><input id='ei-${id}' type='number' step='0.01' value='${p.cours}' style='width:68px;background:var(--input);border:1px solid var(--blue);border-radius:7px;padding:4px 7px;font-size:12px;color:var(--text)'><button onclick='saveCours(${id})' style='background:none;border:none;color:var(--green);font-size:16px;cursor:pointer;padding:0 2px'>✓</button><button onclick='renderPositions()' style='background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 2px'>✗</button></div>`;
-  setTimeout(()=>{const i=document.getElementById("ei-"+id);if(i){i.focus();i.addEventListener("keydown",e=>{if(e.key==="Enter")saveCours(id);});}},50);
-}
-function saveCours(id){const v=parseFloat(document.getElementById("ei-"+id)?.value);if(!isNaN(v))positions.find(p=>p.id===id).cours=v;recalc();renderPositions();render();}
-function removePos(id){positions=positions.filter(p=>p.id!==id);recalc();renderPositions();render();}
-function toggleAddForm(){document.getElementById("addForm").classList.toggle("hidden");}
-function addPosition(){
-  const g=id=>document.getElementById(id).value;
-  positions.push({id:Date.now(),nom:g("fNom"),secteur:g("fSecteur"),type:g("fType"),ticker:g("fTicker"),isin:g("fIsin"),quantite:+g("fQte"),pr:+g("fPr"),cours:+g("fCours"),varJ:0,rep:0});
-  document.getElementById("addForm").classList.add("hidden");
-  ["fNom","fTicker","fSecteur","fIsin","fQte","fPr","fCours"].forEach(id=>document.getElementById(id).value="");
-  recalc();renderPositions();render();
-}
-
 /* ── FETCH COURS ── */
 function parseCSVCours(text){
   const map={};
   text.trim().split("\n").slice(1).forEach(l=>{
     const p=parseCSVLine(l);if(p.length<2)return;
     const raw=p[0].replace(/"/g,"").trim(),ticker=TICKER_MAP[raw]||raw;
-    const cours=cleanNum(p[1]);let varJ=0;
+    const cours=cleanNum(p[1]);let varJ=0,quantite=null,pr=null;
     if(p.length>=3){const v=cleanNum(p[2]);if(!isNaN(v))varJ=v;}
-    if(ticker&&!isNaN(cours))map[ticker]={cours,varJ};
+    if(p.length>=4){const q=cleanNum(p[3]);if(!isNaN(q)&&q>0)quantite=q;}
+    if(p.length>=5){const pv=cleanNum(p[4]);if(!isNaN(pv)&&pv>0)pr=pv;}
+    if(ticker&&!isNaN(cours))map[ticker]={cours,varJ,quantite,pr};
   });return map;
 }
 async function fetchCours(){
@@ -777,7 +740,11 @@ async function fetchCours(){
   for(const url of urls){
     try{const r=await fetch(url);if(!r.ok)continue;const t=await r.text();const map=parseCSVCours(t);
       if(!Object.keys(map).length)continue;
-      positions.forEach(p=>{if(map[p.ticker]!==undefined){p.cours=map[p.ticker].cours;p.varJ=map[p.ticker].varJ;}});
+      positions.forEach(p=>{if(map[p.ticker]!==undefined){
+        p.cours=map[p.ticker].cours;p.varJ=map[p.ticker].varJ;
+        if(map[p.ticker].quantite!==null)p.quantite=map[p.ticker].quantite;
+        if(map[p.ticker].pr!==null)p.pr=map[p.ticker].pr;
+      }});
       if(icon)icon.classList.remove("spinning");if(dot)dot.className="rdot green";if(btn)btn.disabled=false;
       recalc();render();return;
     }catch(e){continue;}
@@ -792,9 +759,9 @@ async function fetchHisto(){
   for(const url of urls){
     try{const r=await fetch(url);if(!r.ok)continue;const text=await r.text();const parsed=[];
       text.trim().split("\n").slice(1).forEach(l=>{
-        const p=parseCSVLine(l);if(p.length<7)return;const ds=p[0].replace(/"/g,"").trim();if(!ds||ds==="DATE"||ds==="DEBUT")return;
-        const d=parseDate(ds),valo=cleanNum(p[1]),varJ2=cleanNum(p[5]),benef=cleanNum(p[6]);
-        if(d&&!isNaN(valo)&&!isNaN(benef))parsed.push({date:d,valo,varJ:isNaN(varJ2)?0:varJ2,benef});
+        const p=parseCSVLine(l);if(p.length<3)return;const ds=p[0].replace(/"/g,"").trim();if(!ds||ds==="DATE"||ds==="DEBUT")return;
+        const d=parseDate(ds),valo=cleanNum(p[1]),benef=cleanNum(p[2]),varJ2=p.length>=4?cleanNum(p[3]):0;
+        if(d&&!isNaN(valo)&&!isNaN(benef))parsed.push({date:d,valo,benef,varJ:isNaN(varJ2)?0:varJ2});
       });
       if(!parsed.length)continue;parsed.sort((a,b)=>a.date-b.date);histoData=parsed;
       renderHisto(0);renderMiniHisto();return;
@@ -836,68 +803,104 @@ function renderHisto(months){
 }
 function renderHeatmap(){
   if(!histoData.length)return;
-  const CELL=14,GAP=3,STEP=CELL+GAP; // 17px par semaine (col width + gap)
   const grid=document.getElementById("hmGrid");grid.innerHTML="";
-  const monthsEl=document.getElementById("hmMonths");monthsEl.innerHTML="";
-
+  const months=document.getElementById("hmMonths");months.innerHTML="";
   const dataMap={};histoData.forEach(d=>dataMap[d.date.toISOString().slice(0,10)]=d.varJ);
-  const allVals=Object.values(dataMap);
-  const maxPos=Math.max(...allVals.filter(v=>v>0),1);
-  const maxNeg=Math.abs(Math.min(...allVals.filter(v=>v<0),-1));
-  function getColor(v){
-    if(v===undefined)return isDark?"#181f33":"#dde3f0";
-    if(Math.abs(v)<5)return isDark?"#242e47":"#c4cfe3";
-    if(v>0){const i=v/maxPos;return i>0.5?"#14532d":i>0.2?"#15803d":"#16a34a";}
-    const i=Math.abs(v)/maxNeg;return i>0.5?"#7f1d1d":i>0.2?"#b91c1c":"#ef4444";
-  }
-
+  const allVals=Object.values(dataMap),maxPos=Math.max(...allVals.filter(v=>v>0),1),maxNeg=Math.abs(Math.min(...allVals.filter(v=>v<0),-1));
+  function getColor(v){if(v===undefined)return isDark?"#181f33":"#dde3f0";if(Math.abs(v)<5)return isDark?"#242e47":"#c4cfe3";if(v>0){const i=v/maxPos;return i>0.5?"#14532d":i>0.2?"#15803d":"#16a34a";}const i=Math.abs(v)/maxNeg;return i>0.5?"#7f1d1d":i>0.2?"#b91c1c":"#ef4444";}
   const startDate=new Date(histoData[0].date),endDate=new Date(histoData[histoData.length-1].date);
   const start=new Date(startDate);start.setDate(start.getDate()-((start.getDay()+6)%7));
-
-  let weekEl=null,weekCount=0,lastMonth=-1;
-  const monthPositions=[];
-  const cur=new Date(start);
-
+  let weekEl=null,lastMonth=-1,prevMonth=-1;const monthW=[];const cur=new Date(start);
   while(cur<=endDate){
-    const dow=(cur.getDay()+6)%7; // 0=Lun…6=Dim
+    const dow=(cur.getDay()+6)%7;
     if(dow===0){
-      weekEl=document.createElement("div");weekEl.className="hm-week";grid.appendChild(weekEl);
-      const m=cur.getMonth(),y=cur.getFullYear();
-      if(m!==lastMonth){
-        const label=cur.toLocaleDateString("fr-FR",{month:"short"})+" "+String(y).slice(2);
-        monthPositions.push({label,weekIndex:weekCount});lastMonth=m;
-      }
-      weekCount++;
+      const m=cur.getMonth();
+      if(weekEl&&m!==prevMonth){const sep=document.createElement("div");sep.className="hm-sep";grid.appendChild(sep);}
+      prevMonth=m;weekEl=document.createElement("div");weekEl.className="hm-week";grid.appendChild(weekEl);
+      if(m!==lastMonth){monthW.push({label:cur.toLocaleDateString("fr-FR",{month:"short"})});lastMonth=m;}
     }
     if(!weekEl){cur.setDate(cur.getDate()+1);continue;}
     const isWE=dow>=5,key=cur.toISOString().slice(0,10),hasData=dataMap.hasOwnProperty(key),v=hasData?dataMap[key]:undefined;
     const cell=document.createElement("div");cell.className="hm-day";
-    cell.style.background=isWE?(isDark?"#0d1017":"#e2eaf5"):getColor(v);
-    cell.style.opacity=isWE?"0.2":"1";
+    cell.style.background=isWE?(isDark?"#0d1017":"#e2eaf5"):getColor(v);cell.style.opacity=isWE?"0.3":"1";
     if(!isWE&&hasData){
-      const ds=cur.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long",year:"numeric"});
-      const vs=(v>=0?"+":"")+v.toFixed(2)+" €",vc=v>0?"#1fd6a0":v<0?"#ff5271":"#7b87a8";
-      const handler=(e)=>{e.preventDefault();e.stopPropagation();showTip(`<div style='color:#7b87a8;font-size:11px;margin-bottom:3px'>${ds}</div><div style='font-weight:800;color:${vc};font-size:15px'>${vs}</div>`);};
-      cell.addEventListener("touchstart",handler,{passive:false});
-      cell.addEventListener("click",handler);
+      const ds=cur.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long"}),vs=(v>=0?"+":"")+v.toFixed(2)+" €",vc=v>=0?"#1fd6a0":"#ff5271";
+      cell.addEventListener("touchstart",e=>{e.preventDefault();showTip(`<div style='color:#7b87a8;font-size:11px;margin-bottom:2px'>${ds}</div><div style='font-weight:700;color:${vc}'>${vs}</div>`);},{passive:false});
     }
     weekEl.appendChild(cell);cur.setDate(cur.getDate()+1);
   }
-
-  // Labels mois positionnés absolument, synchronisés avec le scroll
-  monthPositions.forEach(({label,weekIndex})=>{
-    const span=document.createElement("span");
-    span.style.cssText=`position:absolute;left:${weekIndex*STEP}px;font-size:9px;font-weight:600;color:var(--text3);white-space:nowrap;line-height:13px;`;
-    span.textContent=label;monthsEl.appendChild(span);
-  });
-
+  monthW.forEach(({label})=>{const span=document.createElement("span");span.style.cssText="font-size:9px;color:var(--text3);width:50px;flex-shrink:0;";span.textContent=label;months.appendChild(span);});
   const pos=allVals.filter(v=>v>0).length,neg2=allVals.filter(v=>v<0).length;
   const best=histoData.reduce((a,b)=>b.varJ>a.varJ?b:a),worst=histoData.reduce((a,b)=>b.varJ<a.varJ?b:a);
   const pg=isDark?"#1fd6a0":"#059669",pr=isDark?"#ff5271":"#e02847";
   document.getElementById("hmKpis").innerHTML=`
     <div style="color:${pg};font-weight:700">🟩 ${pos} jours</div><div style="color:${pr};font-weight:700">🟥 ${neg2} jours</div>
-    <div style="color:${pg}">Meilleur <b>+${best.varJ.toFixed(0)}€</b> <span style="color:var(--text4)">${best.date.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"2-digit"})}</span></div>
-    <div style="color:${pr}">Pire <b>${worst.varJ.toFixed(0)}€</b> <span style="color:var(--text4)">${worst.date.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"2-digit"})}</span></div>`;
+    <div style="color:${pg}">Meilleur <b>+${best.varJ.toFixed(0)}€</b> <span style="color:var(--text4)">${best.date.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})}</span></div>
+    <div style="color:${pr}">Pire <b>${worst.varJ.toFixed(0)}€</b> <span style="color:var(--text4)">${worst.date.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})}</span></div>`;
+}
+
+/* ── FETCH DIVIDENDES ── */
+async function fetchDividendes(){
+  const RAW="https://docs.google.com/spreadsheets/d/"+SHEET_ID+"/gviz/tq?tqx=out:csv&gid="+DIVID_GID;
+  const urls=[RAW,"https://api.allorigins.win/raw?url="+encodeURIComponent(RAW),"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(RAW)];
+  for(const url of urls){
+    try{const r=await fetch(url);if(!r.ok)continue;const text=await r.text();const parsed=[];
+      text.trim().split("\n").slice(1).forEach(l=>{
+        const p=parseCSVLine(l);if(p.length<3)return;const ds=p[0].replace(/"/g,"").trim();if(!ds||ds==="DATE")return;
+        const d=parseDate(ds);if(!d)return;
+        const rawT=p[1].replace(/"/g,"").trim(),ticker=TICKER_MAP[rawT]||rawT;
+        const montant=cleanNum(p[2]);
+        if(ticker&&!isNaN(montant)&&montant>0)parsed.push({date:d,ticker,montant});
+      });
+      if(!parsed.length)continue;parsed.sort((a,b)=>a.date-b.date);dividData=parsed;renderDividendes();return;
+    }catch(e){continue;}
+  }
+  const el=document.getElementById("divErr");if(el)el.textContent="Impossible de charger les dividendes.";
+}
+function renderDividendes(){
+  if(!dividData.length)return;
+  const total=dividData.reduce((s,d)=>s+d.montant,0);
+  const nb=dividData.length;
+  const currentYear=new Date().getFullYear();
+  const totalYear=dividData.filter(d=>d.date.getFullYear()===currentYear).reduce((s,d)=>s+d.montant,0);
+  const months2=Math.max(1,Math.round((new Date()-dividData[0].date)/(1000*60*60*24*30)));
+  const moyMens=total/months2;
+  const pg=isDark?"#1fd6a0":"#059669";
+  document.getElementById("divKpis").innerHTML=`
+    <div class="kc"><div class="kc-accent" style="background:linear-gradient(90deg,#059669,#1fd6a0)"></div><div class="kc-label">Total perçu</div><div class="kc-val pos">${fmt(total)}</div><div class="kc-sub">Depuis ouverture</div></div>
+    <div class="kc"><div class="kc-accent" style="background:linear-gradient(90deg,#059669,#1fd6a0)"></div><div class="kc-label">Année ${currentYear}</div><div class="kc-val pos">${fmt(totalYear)}</div><div class="kc-sub">Reçus cette année</div></div>
+    <div class="kc"><div class="kc-accent" style="background:linear-gradient(90deg,#64748b,#94a3b8)"></div><div class="kc-label">Versements</div><div class="kc-val">${nb}</div><div class="kc-sub">Nb total</div></div>
+    <div class="kc"><div class="kc-accent" style="background:linear-gradient(90deg,#64748b,#94a3b8)"></div><div class="kc-label">Moy. mensuelle</div><div class="kc-val">${fmt(moyMens)}</div><div class="kc-sub">Revenu passif</div></div>`;
+  const ac=axisC(),gc=gridC();
+  // Graphe par mois
+  const byMonth={};dividData.forEach(d=>{const k=d.date.getFullYear()+"-"+(d.date.getMonth()+1).toString().padStart(2,"0");byMonth[k]=(byMonth[k]||0)+d.montant;});
+  const mKeys=Object.keys(byMonth).sort();
+  const mLabels=mKeys.map(k=>{const[y,m]=k.split("-");return["","Jan","Fév","Mar","Avr","Mai","Jun","Jul","Aoû","Sep","Oct","Nov","Déc"][+m]+" "+y.slice(2);});
+  const mVals=mKeys.map(k=>+byMonth[k].toFixed(2));
+  const divMonthBadgeEl=document.getElementById("divMonthBadge");
+  if(divMonthBadgeEl)divMonthBadgeEl.textContent=mVals.length?fmt(mVals[mVals.length-1])+" dernier mois":"—";
+  if(charts.divMonth)charts.divMonth.destroy();
+  const divMonthEl=document.getElementById("chartDivMonth");
+  if(divMonthEl){charts.divMonth=new Chart(divMonthEl,{type:"bar",data:{labels:mLabels,datasets:[{data:mVals,backgroundColor:(isDark?"rgba(31,214,160,.65)":"rgba(5,150,105,.7)"),hoverBackgroundColor:pg,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...getTTP(),callbacks:{label:c=>fmt(c.parsed.y)}}},scales:{x:{ticks:{color:ac,font:{size:8},maxRotation:45,maxTicksLimit:8},grid:{color:gc},border:{color:"rgba(0,0,0,0)"}},y:{ticks:{color:ac,font:{size:8},maxTicksLimit:4,callback:v=>v.toFixed(0)+"€"},grid:{color:gc},border:{color:"rgba(0,0,0,0)"}}}}});}
+  // Graphe par ticker
+  const byTicker2={};dividData.forEach(d=>byTicker2[d.ticker]=(byTicker2[d.ticker]||0)+d.montant);
+  const tkE=Object.entries(byTicker2).sort((a,b)=>b[1]-a[1]);
+  const tkL=tkE.map(e=>e[0]),tkD=tkE.map(e=>+e[1].toFixed(2));
+  const tkC=tkL.map(l=>GEO_COLS[positions.find(p=>p.ticker===l)?.secteur]||TYPE_COLS[positions.find(p=>p.ticker===l)?.type]||pg);
+  const divTickerBadgeEl=document.getElementById("divTickerBadge");
+  if(divTickerBadgeEl&&tkL[0])divTickerBadgeEl.textContent=tkL[0]+" · "+fmt(tkD[0]);
+  if(charts.divTicker)charts.divTicker.destroy();
+  const divTickerEl=document.getElementById("chartDivTicker");
+  if(divTickerEl){charts.divTicker=new Chart(divTickerEl,{type:"bar",data:{labels:tkL,datasets:[{data:tkD,backgroundColor:tkC.map(c=>c+"cc"),borderColor:tkC,borderWidth:1,borderRadius:5,borderSkipped:false}]},options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...getTTP(),callbacks:{label:c=>fmt(c.parsed.x)}}},scales:{x:{ticks:{color:ac,font:{size:8},maxTicksLimit:4,callback:v=>v.toFixed(0)+"€"},grid:{color:gc},border:{color:"rgba(0,0,0,0)"}},y:{ticks:{color:isDark?"#8b95b0":"#475569",font:{size:10,weight:"700"}},grid:{display:false},border:{display:false}}}}});}
+  // Liste des versements
+  const divCards=document.getElementById("divCards");divCards.innerHTML="";
+  [...dividData].reverse().forEach(d=>{
+    const p=positions.find(x=>x.ticker===d.ticker);
+    const badge=!p?"badge-etf":p.type==="ETF"?"badge-etf":p.type==="ACTION"?"badge-action":"badge-etc";
+    const div=document.createElement("div");div.className="txc";
+    div.innerHTML=`<div><div style="display:flex;align-items:center;gap:7px;margin-bottom:4px"><span class="badge ${badge}">${d.ticker}</span><span style="font-size:10px;color:var(--text3)">${d.date.toLocaleDateString("fr-FR")}</span></div></div><div style="font-weight:800;font-size:15px;color:${isDark?"#1fd6a0":"#059669"};letter-spacing:-.01em">+${fmt(d.montant)}</div>`;
+    divCards.appendChild(div);
+  });
 }
 
 /* ── FETCH TRANSAC ── */
@@ -955,12 +958,13 @@ function renderTransac(){
 
 /* ── TABS ── */
 function showTab(name,el){
-  ["overview","positions","transactions","historique","ia"].forEach(t=>{const e=document.getElementById("tab-"+t);if(e)e.classList.toggle("hidden",t!==name);});
+  ["overview","positions","transactions","dividendes","historique","ia"].forEach(t=>{const e=document.getElementById("tab-"+t);if(e)e.classList.toggle("hidden",t!==name);});
   document.querySelectorAll(".nb").forEach(b=>b.classList.remove("active"));el.classList.add("active");
   document.getElementById("scroll").scrollTo(0,0);
   if(name==="overview")setTimeout(()=>render(),60);
   if(name==="positions")renderPositions();
   if(name==="transactions"){if(!transacData.length)fetchTransac();else renderTransac();}
+  if(name==="dividendes"){if(!dividData.length)fetchDividendes();else renderDividendes();}
   if(name==="historique"){if(!histoData.length)fetchHisto();else renderHisto(0);}
 }
 
@@ -973,7 +977,8 @@ async function callClaude(mode){
   document.getElementById("aiEmpty").classList.add("hidden");document.getElementById("aiResult").classList.add("hidden");document.getElementById("aiLoading").classList.remove("hidden");
   const{inv,val,pct}=totals();
   const data=positions.map(p=>({nom:p.nom,secteur:p.secteur,type:p.type,ticker:p.ticker,quantite:p.quantite,pr:p.pr,cours:p.cours,varJ:(p.varJ||0)+"%",valeur:+(p.quantite*p.cours).toFixed(2),pnl:+((p.cours-p.pr)*p.quantite).toFixed(2),pnlPct:fmtP((p.cours-p.pr)/p.pr*100),rep:p.rep+"%"}));
-  const ctx="Portefeuille PEA:\n"+JSON.stringify(data,null,2)+"\nTotal investi: "+fmt(inv)+"\nValeur: "+fmt(val)+"\nPerf: "+fmtP(pct);
+  const totalDiv=dividData.reduce((s,d)=>s+d.montant,0);
+  const ctx="Portefeuille PEA:\n"+JSON.stringify(data,null,2)+"\nTotal investi: "+fmt(inv)+"\nValeur: "+fmt(val)+"\nPerf: "+fmtP(pct)+(totalDiv>0?"\nDividendes reçus: "+fmt(totalDiv):"");
   const prompts={analyse:ctx+"\n\nAnalyse synthétique: diversification, performance, points forts/attention. En français professionnel.",rapport:ctx+"\n\nRapport de performance: résumé exécutif, classement lignes, analyse répartition. En français.",alertes:ctx+"\n\nAlertes prioritaires: concentration, déséquilibres, sous-performances, rééquilibrages. Priorise 🔴🟡🟢. En français."};
   try{
     const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[{role:"user",content:prompts[mode]}]})});
