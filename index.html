@@ -10,6 +10,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  // Apply saved theme immediately to avoid flash
+  (function(){const t=localStorage.getItem('pea-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();
+</script>
 <style>
 /* ═══════════════════════════════════════════════════
    RESET & BASE
@@ -583,8 +587,31 @@ body{background:var(--bg);color:var(--text)}
 }
 
 /* ═══════════════════════════════════════════════════
-   EMPTY STATES
+   ANNUAL PERF TABLE
 ═══════════════════════════════════════════════════ */
+.yr-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.yr-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:12px 14px;
+  box-shadow:var(--card-shadow);
+  transition:background .3s;
+  position:relative;overflow:hidden;
+}
+.yr-accent{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:var(--r-lg) 0 0 var(--r-lg)}
+.yr-label{font-family:'Manrope',sans-serif;font-size:13px;font-weight:800;color:var(--text);width:44px;flex-shrink:0}
+.yr-bar-wrap{flex:1;height:6px;background:var(--elevated);border-radius:3px;overflow:hidden}
+.yr-bar{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.16,1,.3,1)}
+.yr-val{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em;width:70px;text-align:right;flex-shrink:0}
+.yr-sub{font-size:10px;color:var(--text3);font-weight:500;width:60px;text-align:right;flex-shrink:0}
+
+/* ─ varJ badge on position card header ─ */
+.varj-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:3px 8px;border-radius:999px;
+  font-size:11px;font-weight:700;letter-spacing:.01em;
+  font-variant-numeric:tabular-nums;flex-shrink:0;
+}
 .empty-state{
   display:flex;flex-direction:column;align-items:center;
   justify-content:center;padding:48px 24px;text-align:center;
@@ -682,10 +709,45 @@ body{background:var(--bg);color:var(--text)}
 .value-updated{
   animation:valueUpdate .35s cubic-bezier(.16,1,.3,1);
 }
+
+/* ═══════════════════════════════════════════════════
+   PULL-TO-REFRESH
+═══════════════════════════════════════════════════ */
+#ptr{
+  position:fixed;top:calc(env(safe-area-inset-top,44px) + 58px);
+  left:50%;transform:translateX(-50%);
+  z-index:99;
+  display:flex;align-items:center;gap:8px;
+  padding:8px 16px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,0,0,.12);
+  font-size:11px;font-weight:600;color:var(--text3);
+  opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s;
+}
+#ptr.ptr-visible{opacity:1}
+#ptr.ptr-trigger{color:var(--blue)}
+#ptr svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;transition:transform .3s}
+#ptr.ptr-trigger svg{transform:rotate(180deg)}
+#ptr.ptr-loading svg{animation:rot .7s linear infinite}
+
+/* ═══════════════════════════════════════════════════
+   REFRESH TIMESTAMP
+═══════════════════════════════════════════════════ */
+.tb-refresh-time{
+  font-size:9px;color:var(--text3);font-weight:500;
+  margin-top:1px;letter-spacing:0;
+}
 </style>
 </head>
 <body>
 <div id="tip"></div>
+
+<!-- Pull-to-refresh indicator -->
+<div id="ptr">
+  <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+  <span id="ptrLabel">Tirer pour actualiser</span>
+</div>
 
 <!-- ═══════════ TOPBAR ═══════════ -->
 <div id="topbar">
@@ -821,31 +883,57 @@ body{background:var(--bg);color:var(--text)}
   </div>
 
   <!-- ══════════════════════════════
-       TAB: TRANSACTIONS
+       TAB: FLUX (Transactions + Dividendes)
   ══════════════════════════════ -->
   <div id="tab-transactions" class="tab-content hidden">
-    <div id="txKpis" class="kpi-grid" style="margin-bottom:10px"></div>
-    <div class="card">
-      <div class="section-header">
-        <div class="sec-title">Investi / mois</div>
-        <div id="dcaBadge" class="chart-badge" style="color:var(--blue)">—</div>
+    <!-- Sub-toggle -->
+    <div style="margin-bottom:12px">
+      <div class="chart-toggle" style="max-width:260px">
+        <button class="ct-btn active" id="fluxBtnTx" onclick="switchFlux('tx')">Transactions</button>
+        <button class="ct-btn" id="fluxBtnDiv" onclick="switchFlux('div')">Dividendes</button>
       </div>
-      <div style="height:108px"><canvas id="chartDCA"></canvas></div>
     </div>
-    <div class="card">
-      <div class="section-header">
-        <div class="sec-title">Cumul investi</div>
-        <div id="cumulBadge" class="chart-badge" style="color:var(--purple)">—</div>
+    <!-- Transactions panel -->
+    <div id="fluxPanelTx">
+      <div id="txKpis" class="kpi-grid" style="margin-bottom:10px"></div>
+      <div class="card">
+        <div class="section-header">
+          <div class="sec-title">Investi / mois</div>
+          <div id="dcaBadge" class="chart-badge" style="color:var(--blue)">—</div>
+        </div>
+        <div style="height:108px"><canvas id="chartDCA"></canvas></div>
       </div>
-      <div style="height:88px"><canvas id="chartCumul"></canvas></div>
+      <div class="card">
+        <div class="section-header">
+          <div class="sec-title">Cumul investi</div>
+          <div id="cumulBadge" class="chart-badge" style="color:var(--purple)">—</div>
+        </div>
+        <div style="height:88px"><canvas id="chartCumul"></canvas></div>
+      </div>
+      <div id="txCards"></div>
+      <div id="txErr" style="font-size:11px;color:var(--red);margin-bottom:8px"></div>
     </div>
-    <div id="txCards"></div>
-    <div id="txErr" style="font-size:11px;color:var(--red);margin-bottom:8px"></div>
+    <!-- Dividendes panel -->
+    <div id="fluxPanelDiv" class="hidden">
+      <div id="divKpis" class="kpi-grid" style="margin-bottom:10px"></div>
+      <div class="card">
+        <div class="section-header">
+          <div class="sec-title">Dividendes / mois</div>
+          <div id="divMonthBadge" class="chart-badge" style="color:var(--green)">—</div>
+        </div>
+        <div style="height:108px"><canvas id="chartDivMonth"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="section-header">
+          <div class="sec-title">Répartition par ligne</div>
+          <div id="divTickerBadge" class="chart-badge" style="color:var(--green)">—</div>
+        </div>
+        <div style="height:100px"><canvas id="chartDivTicker"></canvas></div>
+      </div>
+      <div id="divCards"></div>
+      <div id="divErr" style="font-size:11px;color:var(--red);margin-bottom:8px"></div>
+    </div>
   </div>
-
-  <!-- ══════════════════════════════
-       TAB: HISTORIQUE
-  ══════════════════════════════ -->
   <div id="tab-historique" class="tab-content hidden">
     <div class="frow">
       <button class="fbtn" id="hf1m" onclick="filterHisto(1)">1M</button>
@@ -868,6 +956,15 @@ body{background:var(--bg);color:var(--text)}
         <div id="histoBenefBadge" class="chart-badge">—</div>
       </div>
       <div style="height:120px"><canvas id="chartBenef"></canvas></div>
+    </div>
+    <!-- Annual performance -->
+    <div class="card">
+      <div class="section-header" style="margin-bottom:14px">
+        <div class="sec-title">Performance annuelle (TRI)</div>
+        <div id="triTooltipBtn" style="font-size:10px;color:var(--blue);font-weight:600;cursor:pointer" onclick="showTip('<div style=\'font-weight:700;color:#eef2ff;margin-bottom:4px\'>Taux de Rendement Interne</div><div style=\'color:#8b95b0;font-size:11px;line-height:1.7\'>Taux r tel que la valeur actualisée de tous vos apports de l\'année = valeur finale. Prend en compte la date exacte de chaque versement DCA.</div>')">ⓘ Qu'est-ce que le TRI ?</div>
+      </div>
+      <div id="annualPerfGrid" class="yr-grid"></div>
+      <div id="annualPerfEmpty" style="font-size:11px;color:var(--text3);text-align:center;padding:16px 0">Chargement des données…</div>
     </div>
     <div class="card">
       <div class="sec-title" style="margin-bottom:10px">Heatmap journalière</div>
@@ -897,29 +994,6 @@ body{background:var(--bg);color:var(--text)}
       </div>
     </div>
     <div id="histoErr" style="font-size:11px;color:var(--red);margin-bottom:8px"></div>
-  </div>
-
-  <!-- ══════════════════════════════
-       TAB: DIVIDENDES
-  ══════════════════════════════ -->
-  <div id="tab-dividendes" class="tab-content hidden">
-    <div id="divKpis" class="kpi-grid" style="margin-bottom:10px"></div>
-    <div class="card">
-      <div class="section-header">
-        <div class="sec-title">Dividendes / mois</div>
-        <div id="divMonthBadge" class="chart-badge" style="color:var(--green)">—</div>
-      </div>
-      <div style="height:108px"><canvas id="chartDivMonth"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="section-header">
-        <div class="sec-title">Répartition par ligne</div>
-        <div id="divTickerBadge" class="chart-badge" style="color:var(--green)">—</div>
-      </div>
-      <div style="height:100px"><canvas id="chartDivTicker"></canvas></div>
-    </div>
-    <div id="divCards"></div>
-    <div id="divErr" style="font-size:11px;color:var(--red);margin-bottom:8px"></div>
   </div>
 
   <!-- ══════════════════════════════
@@ -992,11 +1066,7 @@ body{background:var(--bg);color:var(--text)}
   </button>
   <button class="nb" onclick="showTab('transactions',this)">
     <svg viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4 4 4"/><path d="M17 8v12m0 0 4-4m-4 4-4-4"/></svg>
-    <span>Transac.</span>
-  </button>
-  <button class="nb" onclick="showTab('dividendes',this)">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.8 9A2 2 0 0 0 13 8h-2a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4h-2a2 2 0 0 1-1.8-1"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>
-    <span>Divid.</span>
+    <span>Flux</span>
   </button>
   <button class="nb" onclick="showTab('historique',this)">
     <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -1030,7 +1100,13 @@ let positions=[
   {id:9,nom:"Air Liquide",secteur:"EUROPE",type:"ACTION",ticker:"AI",isin:"FR0000120171",quantite:0,pr:0,cours:0,varJ:0,rep:0},
 ];
 
-let charts={},histoData=[],transacData=[],dividData=[],isDark=false,miniMode='valo';
+let charts={},histoData=[],transacData=[],dividData=[],miniMode='valo';
+let isDark=localStorage.getItem('pea-theme')==='dark';
+// Sync icons with saved theme
+if(isDark){
+  const m=document.getElementById("iconMoon"),s=document.getElementById("iconSun");
+  if(m)m.style.display="block";if(s)s.style.display="none";
+}
 const fmt=n=>n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
 const fmtShort=n=>{const abs=Math.abs(n);const s=n<0?"-":"+";if(abs>=1000)return s+(abs/1000).toFixed(1)+"k €";return s+abs.toFixed(2)+" €";}
 const fmtP=n=>(n>=0?"+":"")+n.toFixed(2)+"%";
@@ -1060,6 +1136,7 @@ function getTTP(){
 window.toggleTheme=function(){
   isDark=!isDark;
   document.documentElement.setAttribute("data-theme",isDark?"dark":"light");
+  localStorage.setItem('pea-theme',isDark?"dark":"light");
   document.getElementById("iconMoon").style.display=isDark?"block":"none";
   document.getElementById("iconSun").style.display=isDark?"none":"block";
   Object.keys(charts).forEach(k=>{if(charts[k])charts[k].destroy();delete charts[k];});
@@ -1333,6 +1410,9 @@ function renderPositions(){
     const badge=p.type==="ETF"?"badge-etf":p.type==="ACTION"?"badge-action":"badge-etc";
     const vc=pnl2>=0?"pos":"neg",jc=gainJ>=0?"pos":"neg";
     const stripeColor=pnl2>=0?(isDark?"#34D399":"#10B981"):(isDark?"#F87171":"#EF4444");
+    const varJVal=p.varJ||0;
+    const varJColor=varJVal>=0?(isDark?"rgba(52,211,153,0.15)":"rgba(16,185,129,0.12)"):(isDark?"rgba(248,113,113,0.15)":"rgba(239,68,68,0.1)");
+    const varJTextColor=varJVal>=0?(isDark?"#34D399":"#059669"):(isDark?"#F87171":"#EF4444");
     const div=document.createElement("div");
     div.className=`pc animate-in s${Math.min(idx+1,9)}`;
     div.innerHTML=`
@@ -1341,11 +1421,14 @@ function renderPositions(){
         <div style="flex:1;padding:14px 14px 14px 0">
           <div class="pc-hd">
             <div class="pc-name">${p.nom}</div>
-            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span class="badge ${badge}">${p.type}</span></div>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+              <span class="varj-badge" style="background:${varJColor};color:${varJTextColor}">${varJVal>=0?"▲":"▼"}${Math.abs(varJVal).toFixed(2)}%</span>
+              <span class="badge ${badge}">${p.type}</span>
+            </div>
           </div>
           <div class="pc-grid">
             <div class="pc-cell"><div class="pc-cl">Cours</div><div class="pc-cv" style="color:var(--blue)">${p.cours.toFixed(2)} €</div></div>
-            <div class="pc-cell"><div class="pc-cl">Var. jour</div><div class="pc-cv ${jc}">${(p.varJ||0)>=0?"+":""}${(p.varJ||0).toFixed(2)}%<br><span style="font-size:10px;font-weight:500">${gainJ>=0?"+":""}${fmt(gainJ)}</span></div></div>
+            <div class="pc-cell"><div class="pc-cl">Var. jour (€)</div><div class="pc-cv ${jc}">${gainJ>=0?"+":""}${fmt(gainJ)}</div></div>
             <div class="pc-cell"><div class="pc-cl">Qté</div><div class="pc-cv">${p.quantite}</div></div>
             <div class="pc-cell"><div class="pc-cl">P.Rev.</div><div class="pc-cv" style="color:var(--text3)">${p.pr.toFixed(2)} €</div></div>
             <div class="pc-cell"><div class="pc-cl">Valeur</div><div class="pc-cv">${fmt(val2)}</div></div>
@@ -1392,6 +1475,11 @@ async function fetchCours(){
         if(map[p.ticker].pr!==null)p.pr=map[p.ticker].pr;
       }});
       if(icon)icon.classList.remove("spinning");if(dot)dot.className="rdot green";if(btn)btn.disabled=false;
+      // Update refresh timestamp
+      const now=new Date();
+      const ts=now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+      const hdrPnlEl=document.getElementById("hdrPnl");
+      if(hdrPnlEl){const sub=hdrPnlEl.nextElementSibling;if(sub&&sub.classList.contains("tb-refresh-time"))sub.textContent="Màj "+ts;else{const t=document.createElement("div");t.className="tb-refresh-time";t.textContent="Màj "+ts;hdrPnlEl.parentNode.insertBefore(t,hdrPnlEl.nextSibling);}}
       recalc();render();return;
     }catch(e){continue;}
   }
@@ -1447,6 +1535,7 @@ function renderHisto(months){
   mkLine("chartValo",labels,data.map(d=>d.valo),lb);
   mkLine("chartBenef",labels,data.map(d=>d.benef),last.benef>=0?pg:pr);
   renderHeatmap();
+  renderAnnualPerf();
 }
 function renderHeatmap(){
   if(!histoData.length)return;
@@ -1456,27 +1545,94 @@ function renderHeatmap(){
   const allVals=Object.values(dataMap),maxPos=Math.max(...allVals.filter(v=>v>0),1),maxNeg=Math.abs(Math.min(...allVals.filter(v=>v<0),-1));
   function getColor(v){if(v===undefined)return isDark?"#181f33":"#dde3f0";if(Math.abs(v)<5)return isDark?"#242e47":"#c4cfe3";if(v>0){const i=v/maxPos;return i>0.5?"#14532d":i>0.2?"#15803d":"#16a34a";}const i=Math.abs(v)/maxNeg;return i>0.5?"#7f1d1d":i>0.2?"#b91c1c":"#ef4444";}
   const startDate=new Date(histoData[0].date),endDate=new Date(histoData[histoData.length-1].date);
-  const start=new Date(startDate);start.setDate(start.getDate()-((start.getDay()+6)%7));
-  let weekEl=null,lastMonth=-1,prevMonth=-1;const monthW=[];const cur=new Date(start);
+  // Start on the Monday of the week containing startDate
+  const start=new Date(startDate);
+  const startDow=(start.getDay()+6)%7; // 0=Mon
+  start.setDate(start.getDate()-startDow);
+
+  // First pass: build all week columns and track month label positions
+  const weeks=[];
+  const cur=new Date(start);
   while(cur<=endDate){
     const dow=(cur.getDay()+6)%7;
     if(dow===0){
-      const m=cur.getMonth();
-      if(weekEl&&m!==prevMonth){const sep=document.createElement("div");sep.className="hm-sep";grid.appendChild(sep);}
-      prevMonth=m;weekEl=document.createElement("div");weekEl.className="hm-week";grid.appendChild(weekEl);
-      if(m!==lastMonth){monthW.push({label:cur.toLocaleDateString("fr-FR",{month:"short"})});lastMonth=m;}
+      weeks.push({date:new Date(cur),cells:[]});
     }
-    if(!weekEl){cur.setDate(cur.getDate()+1);continue;}
-    const isWE=dow>=5,key=cur.toISOString().slice(0,10),hasData=dataMap.hasOwnProperty(key),v=hasData?dataMap[key]:undefined;
-    const cell=document.createElement("div");cell.className="hm-day";
-    cell.style.background=isWE?(isDark?"#0d1017":"#e2eaf5"):getColor(v);cell.style.opacity=isWE?"0.3":"1";
-    if(!isWE&&hasData){
-      const ds=cur.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long"}),vs=(v>=0?"+":"")+v.toFixed(2)+" €",vc=v>=0?"#1fd6a0":"#ff5271";
-      cell.addEventListener("touchstart",e=>{e.preventDefault();showTip(`<div style='color:#7b87a8;font-size:11px;margin-bottom:2px'>${ds}</div><div style='font-weight:700;color:${vc}'>${vs}</div>`);},{passive:false});
+    const wk=weeks[weeks.length-1];
+    if(wk){
+      const key=cur.toISOString().slice(0,10);
+      const isWE=dow>=5,hasData=dataMap.hasOwnProperty(key),v=hasData?dataMap[key]:undefined;
+      wk.cells.push({date:new Date(cur),dow,isWE,hasData,v,key});
     }
-    weekEl.appendChild(cell);cur.setDate(cur.getDate()+1);
+    cur.setDate(cur.getDate()+1);
   }
-  monthW.forEach(({label})=>{const span=document.createElement("span");span.style.cssText="font-size:9px;color:var(--text3);width:50px;flex-shrink:0;";span.textContent=label;months.appendChild(span);});
+
+  // Month labels: one label per month, placed at the first week column where month starts
+  // Cell width = 13px + 3px gap = 16px per column, sep = 2px + 3px = 5px
+  const CELL=16,SEP=5;
+  let monthLabels=[];
+  let lastMonth=-1,colOffset=0;
+  weeks.forEach((wk,wi)=>{
+    // Check if this week introduces a new month (look at Monday cell month)
+    const firstCell=wk.cells.find(c=>!c.isWE&&c.dow===0)||wk.cells[0];
+    if(firstCell){
+      const m=firstCell.date.getMonth();
+      const yr=firstCell.date.getFullYear();
+      if(m!==lastMonth){
+        monthLabels.push({label:firstCell.date.toLocaleDateString("fr-FR",{month:"short",year:"2-digit"}),col:wi});
+        lastMonth=m;
+      }
+    }
+  });
+
+  // Render week columns
+  let lastRenderMonth=-1;
+  weeks.forEach((wk,wi)=>{
+    const firstCell=wk.cells.find(c=>!c.isWE&&c.dow===0)||wk.cells[0];
+    if(firstCell){
+      const m=firstCell.date.getMonth();
+      if(m!==lastRenderMonth&&wi>0){
+        const sep=document.createElement("div");sep.className="hm-sep";grid.appendChild(sep);
+        lastRenderMonth=m;
+      } else if(wi===0){lastRenderMonth=m;}
+    }
+    const weekEl=document.createElement("div");weekEl.className="hm-week";
+    // Fill missing days at start (before startDate)
+    for(let d=0;d<wk.cells.length&&wk.cells[d].date<startDate;d++){
+      const cell=document.createElement("div");cell.className="hm-day";
+      cell.style.background="transparent";weekEl.appendChild(cell);
+    }
+    wk.cells.forEach(c=>{
+      if(c.date<startDate)return;
+      const cell=document.createElement("div");cell.className="hm-day";
+      cell.style.background=c.isWE?(isDark?"#0d1017":"#e2eaf5"):getColor(c.v);
+      cell.style.opacity=c.isWE?"0.3":"1";
+      if(!c.isWE&&c.hasData){
+        const ds=c.date.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long"}),
+              vs=(c.v>=0?"+":"")+c.v.toFixed(2)+" €",vc=c.v>=0?"#1fd6a0":"#ff5271";
+        cell.addEventListener("touchstart",e=>{e.preventDefault();showTip(`<div style='color:#7b87a8;font-size:11px;margin-bottom:2px'>${ds}</div><div style='font-weight:700;color:${vc}'>${vs}</div>`);},{passive:false});
+      }
+      weekEl.appendChild(cell);
+    });
+    grid.appendChild(weekEl);
+  });
+
+  // Render month labels aligned with their column
+  // We need to measure actual column positions after render
+  // Use a simpler approach: build spans with width = number of weeks in that month * CELL
+  const monthSpans=[];
+  monthLabels.forEach((ml,i)=>{
+    const nextCol=i+1<monthLabels.length?monthLabels[i+1].col:weeks.length;
+    const nWeeks=nextCol-ml.col;
+    monthSpans.push({label:ml.label,width:nWeeks*CELL-3});
+  });
+  monthSpans.forEach(({label,width})=>{
+    const span=document.createElement("span");
+    span.style.cssText=`font-size:9px;color:var(--text3);width:${Math.max(width,20)}px;flex-shrink:0;overflow:hidden;white-space:nowrap;`;
+    span.textContent=label;
+    months.appendChild(span);
+  });
+
   const pos=allVals.filter(v=>v>0).length,neg2=allVals.filter(v=>v<0).length;
   const best=histoData.reduce((a,b)=>b.varJ>a.varJ?b:a),worst=histoData.reduce((a,b)=>b.varJ<a.varJ?b:a);
   const pg=isDark?"#1fd6a0":"#059669",pr=isDark?"#ff5271":"#e02847";
@@ -1486,7 +1642,118 @@ function renderHeatmap(){
     <div style="color:${pr}">Pire <b>${worst.varJ.toFixed(0)}€</b> <span style="color:var(--text4)">${worst.date.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})}</span></div>`;
 }
 
-/* ── FETCH DIVIDENDES ── */
+/* ── TRI ANNUEL ── */
+function computeIRR(cashflows){
+  // cashflows = [{t: days_from_start, v: amount}] (négatif = sortie, positif = entrée/valeur finale)
+  // Newton-Raphson on daily rate r, then annualize
+  if(!cashflows.length)return null;
+  let r=0.0001; // initial guess: ~3.7% annual
+  for(let iter=0;iter<200;iter++){
+    let npv=0,dnpv=0;
+    cashflows.forEach(cf=>{
+      const disc=Math.pow(1+r,cf.t/365);
+      npv+=cf.v/disc;
+      dnpv+=-cf.t/365*cf.v/Math.pow(1+r,cf.t/365+1);
+    });
+    if(Math.abs(dnpv)<1e-12)break;
+    const rNew=r-npv/dnpv;
+    if(Math.abs(rNew-r)<1e-10)break;
+    r=rNew;
+  }
+  if(isNaN(r)||!isFinite(r))return null;
+  // Annualize: (1+r_daily)^365 - 1 is already annual since we used t/365
+  return r; // r is already the annual rate from Newton-Raphson on t/365
+}
+
+function renderAnnualPerf(){
+  const grid=document.getElementById("annualPerfGrid");
+  const empty=document.getElementById("annualPerfEmpty");
+  if(!histoData.length||!transacData.length){if(grid)grid.innerHTML="";if(empty)empty.style.display="block";return;}
+  if(empty)empty.style.display="none";
+
+  // Get all years present in histoData
+  const years=[...new Set(histoData.map(d=>d.date.getFullYear()))].sort();
+  const rows=[];
+  const pg=isDark?"#34D399":"#10B981",pr=isDark?"#F87171":"#EF4444";
+
+  years.forEach(yr=>{
+    const isCurrentYear=yr===new Date().getFullYear();
+    // Get Jan 1 and Dec 31 (or today) data points
+    const jan1=`${yr}-01-01`,dec31=`${yr}-12-31`;
+    const today=new Date().toISOString().slice(0,10);
+    const endKey=isCurrentYear?today:dec31;
+
+    // Find closest histoData entry to start and end
+    const yearData=histoData.filter(d=>d.date.getFullYear()===yr);
+    if(!yearData.length)return;
+
+    // Also include Dec 31 of previous year as starting value if available
+    const prevYearData=histoData.filter(d=>d.date.getFullYear()===yr-1);
+    const startEntry=prevYearData.length?prevYearData[prevYearData.length-1]:yearData[0];
+    const endEntry=yearData[yearData.length-1];
+    const startDate=startEntry.date;
+    const startValo=startEntry.valo;
+
+    // Build cashflows: start = -valo (implicit holding), apports during year = negative flows, end = +valo
+    const refDate=startDate;
+    const cashflows=[];
+    // Opening value as negative cashflow (cost)
+    cashflows.push({t:0,v:-startValo});
+
+    // Apports (DCA) during the year from transacData
+    transacData.filter(t=>t.date.getFullYear()===yr).forEach(t=>{
+      const tDays=(t.date-refDate)/(1000*60*60*24);
+      cashflows.push({t:Math.max(tDays,0.5),v:-t.montant});
+    });
+
+    // End value as positive cashflow
+    const endDays=(endEntry.date-refDate)/(1000*60*60*24);
+    cashflows.push({t:Math.max(endDays,1),v:endEntry.valo});
+
+    // Compute TRI
+    let tri=computeIRR(cashflows);
+    if(tri===null||!isFinite(tri))tri=null;
+
+    // Also compute simple return for comparison
+    const simpleReturn=(endEntry.valo-startValo)/startValo*100;
+
+    rows.push({yr,tri,simpleReturn,endValo:endEntry.valo,startValo,isCurrentYear});
+  });
+
+  if(!rows.length){if(grid)grid.innerHTML="";if(empty){empty.textContent="Données insuffisantes";empty.style.display="block";}return;}
+
+  const maxAbs=Math.max(...rows.map(r=>Math.abs(r.tri!==null?r.tri*100:r.simpleReturn)),1);
+  if(!grid)return;
+  grid.innerHTML="";
+
+  rows.reverse().forEach(row=>{
+    const pct=row.tri!==null?row.tri*100:null;
+    const displayPct=pct!==null?pct:row.simpleReturn;
+    const isPos=displayPct>=0;
+    const color=isPos?pg:pr;
+    const bgColor=isPos?(isDark?"rgba(52,211,153,0.1)":"rgba(16,185,129,0.08)"):(isDark?"rgba(248,113,113,0.1)":"rgba(239,68,68,0.08)");
+    const barWidth=Math.abs(displayPct)/maxAbs*100;
+    const barColor=isPos?(isDark?"#34D399":"#10B981"):(isDark?"#F87171":"#EF4444");
+    const label=row.isCurrentYear?`${row.yr} YTD`:`${row.yr}`;
+    const methodLabel=row.tri!==null?"TRI":"Variation";
+
+    const div=document.createElement("div");
+    div.className="yr-row";
+    div.innerHTML=`
+      <div class="yr-accent" style="background:${color}"></div>
+      <div class="yr-label">${label}</div>
+      <div class="yr-bar-wrap"><div class="yr-bar" style="width:0%;background:${barColor}" data-target="${barWidth}"></div></div>
+      <div class="yr-val" style="color:${color}">${isPos?"+":""}${displayPct.toFixed(2)}%</div>
+      <div class="yr-sub" style="color:var(--text3)">${methodLabel}</div>`;
+    grid.appendChild(div);
+
+    // Animate bar after paint
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      const bar=div.querySelector(".yr-bar");
+      if(bar)bar.style.width=bar.dataset.target+"%";
+    }));
+  });
+}
 async function fetchDividendes(){
   const RAW="https://docs.google.com/spreadsheets/d/"+SHEET_ID+"/gviz/tq?tqx=out:csv&gid="+DIVID_GID;
   const urls=[RAW,"https://api.allorigins.win/raw?url="+encodeURIComponent(RAW),"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(RAW)];
@@ -1604,15 +1871,27 @@ function renderTransac(){
 }
 
 /* ── TABS ── */
+let fluxMode='tx'; // current sub-tab in Flux
+function switchFlux(mode){
+  fluxMode=mode;
+  document.getElementById("fluxBtnTx").classList.toggle("active",mode==="tx");
+  document.getElementById("fluxBtnDiv").classList.toggle("active",mode==="div");
+  document.getElementById("fluxPanelTx").classList.toggle("hidden",mode!=="tx");
+  document.getElementById("fluxPanelDiv").classList.toggle("hidden",mode!=="div");
+  if(mode==="div"){
+    if(!dividData.length)fetchDividendes();
+    else renderDividendes();
+  }
+}
+
 function showTab(name,el){
-  const allTabs=["overview","positions","transactions","dividendes","historique","ia"];
+  const allTabs=["overview","positions","transactions","historique","ia"];
   const currentTab=document.querySelector('.tab-content:not(.hidden)');
 
   document.querySelectorAll(".nb").forEach(b=>b.classList.remove("active"));
   el.classList.add("active");
   document.getElementById("scroll").scrollTo(0,0);
 
-  // Animate out current tab, then animate in new
   if(currentTab&&!currentTab.id.endsWith(name)){
     currentTab.classList.add("tab-exiting");
     setTimeout(()=>{
@@ -1627,8 +1906,10 @@ function showTab(name,el){
       }
       if(name==="overview")setTimeout(()=>render(),60);
       if(name==="positions")renderPositions();
-      if(name==="transactions"){if(!transacData.length)fetchTransac();else renderTransac();}
-      if(name==="dividendes"){if(!dividData.length)fetchDividendes();else renderDividendes();}
+      if(name==="transactions"){
+        if(!transacData.length)fetchTransac();else renderTransac();
+        if(fluxMode==="div"&&!dividData.length)fetchDividendes();
+      }
       if(name==="historique"){if(!histoData.length)fetchHisto();else renderHisto(0);}
     },120);
   } else {
@@ -1637,8 +1918,9 @@ function showTab(name,el){
     if(newTab){newTab.classList.add("tab-entering");setTimeout(()=>newTab.classList.remove("tab-entering"),350);}
     if(name==="overview")setTimeout(()=>render(),60);
     if(name==="positions")renderPositions();
-    if(name==="transactions"){if(!transacData.length)fetchTransac();else renderTransac();}
-    if(name==="dividendes"){if(!dividData.length)fetchDividendes();else renderDividendes();}
+    if(name==="transactions"){
+      if(!transacData.length)fetchTransac();else renderTransac();
+    }
     if(name==="historique"){if(!histoData.length)fetchHisto();else renderHisto(0);}
   }
 }
@@ -1672,11 +1954,63 @@ setTimeout(()=>{
   if(ov){ov.classList.add("tab-entering");setTimeout(()=>ov.classList.remove("tab-entering"),400);}
 },50);
 setInterval(fetchCours,5*60*1000);
+
+// Pause polling when page is hidden (battery/background)
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible")fetchCours();
+});
+
 window.addEventListener("resize",()=>{
   if(!document.getElementById("tab-overview").classList.contains("hidden")){
     renderTreemap();renderGroupHeatmap("hmGeo","secteur",GEO_COLS);renderGroupHeatmap("hmType","type",TYPE_COLS);
   }
 });
+
+/* ── PULL-TO-REFRESH ── */
+(function(){
+  const scroll=document.getElementById("scroll");
+  const ptr=document.getElementById("ptr");
+  const ptrLabel=document.getElementById("ptrLabel");
+  const TRIGGER=72;
+  let startY=0,pulling=false,triggered=false,refreshing=false;
+
+  scroll.addEventListener("touchstart",e=>{
+    if(scroll.scrollTop===0)startY=e.touches[0].clientY;
+    else startY=0;
+    pulling=startY>0;triggered=false;
+  },{passive:true});
+
+  scroll.addEventListener("touchmove",e=>{
+    if(!pulling||refreshing)return;
+    const dy=e.touches[0].clientY-startY;
+    if(dy<=0){ptr.classList.remove("ptr-visible","ptr-trigger");return;}
+    const capped=Math.min(dy,TRIGGER*1.5);
+    const ratio=Math.min(capped/TRIGGER,1);
+    ptr.classList.add("ptr-visible");
+    if(ratio>=1&&!triggered){
+      triggered=true;
+      ptr.classList.add("ptr-trigger");
+      ptrLabel.textContent="Relâcher pour actualiser";
+    } else if(ratio<1){
+      ptr.classList.remove("ptr-trigger");
+      ptrLabel.textContent="Tirer pour actualiser";
+    }
+  },{passive:true});
+
+  scroll.addEventListener("touchend",async()=>{
+    if(!pulling||refreshing)return;
+    pulling=false;
+    if(!triggered){ptr.classList.remove("ptr-visible","ptr-trigger");return;}
+    refreshing=true;
+    ptr.classList.remove("ptr-trigger");
+    ptr.classList.add("ptr-loading");
+    ptrLabel.textContent="Actualisation…";
+    await fetchCours();
+    ptr.classList.remove("ptr-visible","ptr-loading");
+    ptrLabel.textContent="Tirer pour actualiser";
+    refreshing=false;
+  },{passive:true});
+})();
 </script>
 </body>
 </html>
