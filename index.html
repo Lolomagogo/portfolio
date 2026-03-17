@@ -591,19 +591,19 @@ body{background:var(--bg);color:var(--text)}
 ═══════════════════════════════════════════════════ */
 .yr-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
 .yr-row{
-  display:flex;align-items:center;gap:10px;
+  display:flex;align-items:center;gap:8px;
   background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--r-lg);padding:12px 14px;
+  border-radius:var(--r-lg);padding:11px 12px;
   box-shadow:var(--card-shadow);
   transition:background .3s;
   position:relative;overflow:hidden;
 }
 .yr-accent{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:var(--r-lg) 0 0 var(--r-lg)}
-.yr-label{font-family:'Manrope',sans-serif;font-size:13px;font-weight:800;color:var(--text);width:44px;flex-shrink:0}
-.yr-bar-wrap{flex:1;height:6px;background:var(--elevated);border-radius:3px;overflow:hidden}
+.yr-label{font-family:'Manrope',sans-serif;font-size:12px;font-weight:800;color:var(--text);width:46px;flex-shrink:0}
+.yr-bar-wrap{flex:1;height:5px;background:var(--elevated);border-radius:3px;overflow:hidden}
 .yr-bar{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.16,1,.3,1)}
-.yr-val{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em;width:70px;text-align:right;flex-shrink:0}
-.yr-sub{font-size:10px;color:var(--text3);font-weight:500;width:60px;text-align:right;flex-shrink:0}
+.yr-val{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em;width:64px;text-align:right;flex-shrink:0}
+.yr-tri{font-size:10px;font-weight:600;font-variant-numeric:tabular-nums;width:56px;text-align:right;flex-shrink:0;color:var(--text3)}
 
 /* ─ varJ badge on position card header ─ */
 .varj-badge{
@@ -970,7 +970,8 @@ body{background:var(--bg);color:var(--text)}
       <div class="sec-title" style="margin-bottom:10px">Heatmap journalière</div>
       <div id="hmKpis" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:11px;font-weight:500"></div>
       <div style="display:flex;gap:4px">
-        <div style="display:flex;flex-direction:column;margin-right:4px;padding-top:17px;flex-shrink:0">
+        <!-- Fixed day-of-week labels (Mon–Fri only) -->
+        <div style="display:flex;flex-direction:column;padding-top:17px;flex-shrink:0;margin-right:2px">
           <div style="height:13px;font-size:9px;color:var(--text3);line-height:13px">L</div>
           <div style="height:3px"></div>
           <div style="height:13px;font-size:9px;color:var(--text3);line-height:13px">M</div>
@@ -981,9 +982,10 @@ body{background:var(--bg);color:var(--text)}
           <div style="height:3px"></div>
           <div style="height:13px;font-size:9px;color:var(--text3);line-height:13px">V</div>
         </div>
-        <div style="flex:1;overflow:hidden">
-          <div id="hmMonths" style="display:flex;margin-bottom:4px;height:13px"></div>
-          <div class="hm-scroll"><div class="hm-grid" id="hmGrid"></div></div>
+        <!-- Scrollable: month labels + grid together -->
+        <div class="hm-scroll" style="flex:1">
+          <div id="hmMonths" style="display:flex;margin-bottom:4px;min-height:13px"></div>
+          <div class="hm-grid" id="hmGrid"></div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:5px;margin-top:12px;font-size:10px;color:var(--text3)">
@@ -1421,7 +1423,7 @@ function renderPositions(){
     div.innerHTML=`
       <div class="pc-wrap">
         <div class="pc-stripe" style="background:${stripeColor}"></div>
-        <div style="flex:1;padding:14px 14px 14px 0">
+        <div style="flex:1;min-width:0;padding:14px 14px 14px 0">
           <div class="pc-hd">
             <div class="pc-name">${p.nom}</div>
             <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
@@ -1545,7 +1547,6 @@ function renderHeatmap(){
   const grid=document.getElementById("hmGrid");grid.innerHTML="";
   const months=document.getElementById("hmMonths");months.innerHTML="";
 
-  // Local date key to avoid UTC timezone shift (Paris = UTC+1/+2)
   function localKey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 
   const dataMap={};
@@ -1564,7 +1565,7 @@ function renderHeatmap(){
   const startDate=new Date(histoData[0].date);
   const endDate=new Date(histoData[histoData.length-1].date);
 
-  // Roll back to the Monday of the week containing startDate
+  // Roll back to Monday of the first week
   const cur=new Date(startDate);
   cur.setDate(cur.getDate()-((cur.getDay()+6)%7));
 
@@ -1573,13 +1574,17 @@ function renderHeatmap(){
 
   while(true){
     const dow=(cur.getDay()+6)%7; // 0=Mon … 6=Sun
+    const isWE=dow>=5; // Saturday or Sunday
 
     if(dow===0){
-      // New week — record month label at the Monday of the first week of each month
+      // New week column
       if(cur<=endDate){
         const m=cur.getMonth();
         if(m!==lastLabelMonth){
-          monthEntries.push({label:cur.toLocaleDateString("fr-FR",{month:"short",year:"2-digit"}),weekIdx:weekCount});
+          monthEntries.push({
+            label:cur.toLocaleDateString("fr-FR",{month:"short",year:"2-digit"}),
+            weekIdx:weekCount
+          });
           lastLabelMonth=m;
         }
       }
@@ -1589,42 +1594,45 @@ function renderHeatmap(){
       weekCount++;
     }
 
-    const cell=document.createElement("div");
-    cell.className="hm-day";
-    const isWE=dow>=5;
+    // Skip weekend cells entirely
+    if(!isWE){
+      const cell=document.createElement("div");
+      cell.className="hm-day";
 
-    if(cur<startDate||cur>endDate){
-      // Padding cells — fully invisible
-      cell.style.background="transparent";
-      cell.style.opacity="0";
-    } else if(isWE){
-      cell.style.background=isDark?"#0d1017":"#e2eaf5";
-      cell.style.opacity="0.3";
-    } else {
-      const key=localKey(cur);
-      const v=dataMap[key];
-      cell.style.background=getColor(v);
-      if(v!==undefined){
-        const d2=new Date(cur),vc=v>=0?"#1fd6a0":"#ff5271";
-        const ds=d2.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long"});
-        const vs=(v>=0?"+":"")+v.toFixed(2)+" €";
-        cell.addEventListener("touchstart",e=>{e.preventDefault();showTip(`<div style='color:#7b87a8;font-size:11px;margin-bottom:2px'>${ds}</div><div style='font-weight:700;color:${vc}'>${vs}</div>`);},{passive:false});
+      if(cur<startDate||cur>endDate){
+        cell.style.background="transparent";
+        cell.style.opacity="0";
+      } else {
+        const key=localKey(cur);
+        const v=dataMap[key];
+        cell.style.background=getColor(v);
+        if(v!==undefined){
+          const d2=new Date(cur),vc=v>=0?"#1fd6a0":"#ff5271";
+          const ds=d2.toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long"});
+          const vs=(v>=0?"+":"")+v.toFixed(2)+" €";
+          cell.addEventListener("touchstart",e=>{
+            e.preventDefault();
+            showTip(`<div style='color:#7b87a8;font-size:11px;margin-bottom:2px'>${ds}</div><div style='font-weight:700;color:${vc}'>${vs}</div>`);
+          },{passive:false});
+        }
       }
+      if(weekEl)weekEl.appendChild(cell);
     }
-    if(weekEl)weekEl.appendChild(cell);
-    cur.setDate(cur.getDate()+1);
 
-    // Stop after we've completed the week containing endDate
-    if(cur>endDate&&dow===6)break;
+    cur.setDate(cur.getDate()+1);
+    // Stop after completing the Friday of the week containing endDate
+    if(cur>endDate&&dow>=4)break;
   }
 
-  // Month label spans: width = nWeeks * 16px (13px cell + 3px CSS gap)
+  // Month label spans inside the same scroll container — width proportional to week count
+  // Each week col = 13px + 3px CSS gap = 16px
   const COL=16;
   monthEntries.forEach((ml,i)=>{
     const nextIdx=i+1<monthEntries.length?monthEntries[i+1].weekIdx:weekCount;
-    const w=Math.max((nextIdx-ml.weekIdx)*COL-3,18);
+    const nWeeks=nextIdx-ml.weekIdx;
+    const w=Math.max(nWeeks*COL-3,32);
     const span=document.createElement("span");
-    span.style.cssText=`font-size:9px;color:var(--text3);width:${w}px;flex-shrink:0;overflow:hidden;white-space:nowrap;display:inline-block;`;
+    span.style.cssText=`font-size:9px;color:var(--text3);width:${w}px;min-width:${w}px;flex-shrink:0;overflow:hidden;white-space:nowrap;display:inline-block;`;
     span.textContent=ml.label;
     months.appendChild(span);
   });
@@ -1639,23 +1647,16 @@ function renderHeatmap(){
     <div style="color:${pg}">Meilleur <b>+${best.varJ.toFixed(0)}€</b> <span style="color:var(--text4)">${best.date.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})}</span></div>
     <div style="color:${pr}">Pire <b>${worst.varJ.toFixed(0)}€</b> <span style="color:var(--text4)">${worst.date.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})}</span></div>`;
 }
-
-/* ── TRI ANNUEL ── */
+/* ── TRI + PERF ANNUELLE ── */
 function computeIRR(cashflows){
-  // Newton-Raphson: find annual rate r such that NPV = Σ(v_i / (1+r)^(t_i/365)) = 0
-  // t_i in days from reference date
   if(cashflows.length<2)return null;
-  // Try multiple starting points to handle negative or unusual returns
-  const guesses=[0.08,0.2,-0.1,0.5,-0.3];
+  const guesses=[0.08,0.20,-0.05,0.40,-0.20];
   for(const guess of guesses){
-    let r=guess;
-    let converged=false;
+    let r=guess,converged=false;
     for(let iter=0;iter<300;iter++){
-      let npv=0,dnpv=0;
-      let valid=true;
+      let npv=0,dnpv=0,valid=true;
       for(const cf of cashflows){
-        const exp=cf.t/365;
-        const base=1+r;
+        const exp=cf.t/365,base=1+r;
         if(base<=0){valid=false;break;}
         const disc=Math.pow(base,exp);
         npv+=cf.v/disc;
@@ -1663,8 +1664,7 @@ function computeIRR(cashflows){
       }
       if(!valid)break;
       if(Math.abs(dnpv)<1e-10)break;
-      const step=npv/dnpv;
-      r-=step;
+      const step=npv/dnpv;r-=step;
       if(r<=-1)r=-0.99;
       if(Math.abs(step)<1e-9){converged=true;break;}
     }
@@ -1672,93 +1672,64 @@ function computeIRR(cashflows){
   }
   return null;
 }
-
 function renderAnnualPerf(){
   const grid=document.getElementById("annualPerfGrid");
   const empty=document.getElementById("annualPerfEmpty");
-  if(!histoData.length||!transacData.length){if(grid)grid.innerHTML="";if(empty)empty.style.display="block";return;}
+  if(!histoData.length){if(empty)empty.style.display="block";return;}
   if(empty)empty.style.display="none";
-
-  // Get all years present in histoData
   const years=[...new Set(histoData.map(d=>d.date.getFullYear()))].sort();
   const rows=[];
   const pg=isDark?"#34D399":"#10B981",pr=isDark?"#F87171":"#EF4444";
-
   years.forEach(yr=>{
     const isCurrentYear=yr===new Date().getFullYear();
-    // Get Jan 1 and Dec 31 (or today) data points
-    const jan1=`${yr}-01-01`,dec31=`${yr}-12-31`;
-    const today=new Date().toISOString().slice(0,10);
-    const endKey=isCurrentYear?today:dec31;
-
-    // Find closest histoData entry to start and end
     const yearData=histoData.filter(d=>d.date.getFullYear()===yr);
     if(!yearData.length)return;
-
-    // Also include Dec 31 of previous year as starting value if available
     const prevYearData=histoData.filter(d=>d.date.getFullYear()===yr-1);
     const startEntry=prevYearData.length?prevYearData[prevYearData.length-1]:yearData[0];
     const endEntry=yearData[yearData.length-1];
-    const startDate=startEntry.date;
     const startValo=startEntry.valo;
-
-    // Build cashflows: start = -valo (implicit holding), apports during year = negative flows, end = +valo
-    const refDate=startDate;
-    const cashflows=[];
-    // Opening value as negative cashflow (cost)
-    cashflows.push({t:0,v:-startValo});
-
-    // Apports (DCA) during the year from transacData
-    transacData.filter(t=>t.date.getFullYear()===yr).forEach(t=>{
-      const tDays=(t.date-refDate)/(1000*60*60*24);
-      cashflows.push({t:Math.max(tDays,0.5),v:-t.montant});
-    });
-
-    // End value as positive cashflow
-    const endDays=(endEntry.date-refDate)/(1000*60*60*24);
-    cashflows.push({t:Math.max(endDays,1),v:endEntry.valo});
-
-    // Compute TRI
-    let tri=computeIRR(cashflows);
-    if(tri===null||!isFinite(tri))tri=null;
-
-    // Also compute simple return for comparison
     const simpleReturn=(endEntry.valo-startValo)/startValo*100;
-
-    rows.push({yr,tri,simpleReturn,endValo:endEntry.valo,startValo,isCurrentYear});
+    // TRI only if transacData is available
+    let tri=null;
+    if(transacData.length){
+      const refDate=startEntry.date;
+      const cashflows=[{t:0,v:-startValo}];
+      transacData.filter(t=>t.date.getFullYear()===yr).forEach(t=>{
+        const tDays=(t.date-refDate)/(1000*60*60*24);
+        cashflows.push({t:Math.max(tDays,0.5),v:-t.montant});
+      });
+      const endDays=(endEntry.date-refDate)/(1000*60*60*24);
+      cashflows.push({t:Math.max(endDays,1),v:endEntry.valo});
+      tri=computeIRR(cashflows);
+    }
+    rows.push({yr,tri,simpleReturn,isCurrentYear});
   });
-
   if(!rows.length){if(grid)grid.innerHTML="";if(empty){empty.textContent="Données insuffisantes";empty.style.display="block";}return;}
-
-  const maxAbs=Math.max(...rows.map(r=>Math.abs(r.tri!==null?r.tri*100:r.simpleReturn)),1);
   if(!grid)return;
   grid.innerHTML="";
-
-  rows.reverse().forEach(row=>{
-    const pct=row.tri!==null?row.tri*100:null;
-    const displayPct=pct!==null?pct:row.simpleReturn;
-    const isPos=displayPct>=0;
+  const maxAbs=Math.max(...rows.map(r=>Math.abs(r.simpleReturn)),1);
+  rows.slice().reverse().forEach(row=>{
+    const isPos=row.simpleReturn>=0;
     const color=isPos?pg:pr;
-    const bgColor=isPos?(isDark?"rgba(52,211,153,0.1)":"rgba(16,185,129,0.08)"):(isDark?"rgba(248,113,113,0.1)":"rgba(239,68,68,0.08)");
-    const barWidth=Math.abs(displayPct)/maxAbs*100;
+    const barWidth=Math.abs(row.simpleReturn)/maxAbs*100;
     const barColor=isPos?(isDark?"#34D399":"#10B981"):(isDark?"#F87171":"#EF4444");
-    const label=row.isCurrentYear?`${row.yr} YTD`:`${row.yr}`;
-    const methodLabel=row.tri!==null?"TRI":"Variation";
-
+    const triStr=row.tri!==null
+      ?(row.tri*100>=0?"+":"")+(row.tri*100).toFixed(2)+"%"
+      :"—";
+    const triColor=row.tri!==null
+      ?(row.tri*100>=0?pg:pr)
+      :"var(--text4)";
     const div=document.createElement("div");
     div.className="yr-row";
     div.innerHTML=`
       <div class="yr-accent" style="background:${color}"></div>
-      <div class="yr-label">${label}</div>
+      <div class="yr-label">${row.yr}${row.isCurrentYear?`<div style="font-size:9px;font-weight:600;color:var(--text3);line-height:1.2">YTD</div>`:""}</div>
       <div class="yr-bar-wrap"><div class="yr-bar" style="width:0%;background:${barColor}" data-target="${barWidth}"></div></div>
-      <div class="yr-val" style="color:${color}">${isPos?"+":""}${displayPct.toFixed(2)}%</div>
-      <div class="yr-sub" style="color:var(--text3)">${methodLabel}</div>`;
+      <div class="yr-val" style="color:${color}">${isPos?"+":""}${row.simpleReturn.toFixed(2)}%</div>
+      <div class="yr-tri" style="color:${triColor}">TRI ${triStr}</div>`;
     grid.appendChild(div);
-
-    // Animate bar after paint
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      const bar=div.querySelector(".yr-bar");
-      if(bar)bar.style.width=bar.dataset.target+"%";
+      const bar=div.querySelector(".yr-bar");if(bar)bar.style.width=bar.dataset.target+"%";
     }));
   });
 }
