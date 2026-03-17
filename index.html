@@ -960,8 +960,8 @@ body{background:var(--bg);color:var(--text)}
     <!-- Annual performance -->
     <div class="card">
       <div class="section-header" style="margin-bottom:14px">
-        <div class="sec-title">Performance annuelle (TRI)</div>
-        <div id="triTooltipBtn" style="font-size:10px;color:var(--blue);font-weight:600;cursor:pointer" onclick="showTip('<div style=\'font-weight:700;color:#eef2ff;margin-bottom:4px\'>Taux de Rendement Interne</div><div style=\'color:#8b95b0;font-size:11px;line-height:1.7\'>Taux r tel que la valeur actualisée de tous vos apports de l\'année = valeur finale. Prend en compte la date exacte de chaque versement DCA.</div>')">ⓘ Qu'est-ce que le TRI ?</div>
+        <div class="sec-title">Performance annuelle</div>
+        <div id="triTooltipBtn" style="font-size:10px;color:var(--blue);font-weight:600;cursor:pointer" onclick="showTip('<div style=\'font-weight:700;color:#eef2ff;margin-bottom:4px\'>Formule</div><div style=\'color:#8b95b0;font-size:11px;line-height:1.8\'>Δbénéfice année ÷ investi total actuel.<br>La somme des années = performance all-time.</div>')">ⓘ Méthode</div>
       </div>
       <div id="annualPerfGrid" class="yr-grid"></div>
       <div id="annualPerfEmpty" style="font-size:11px;color:var(--text3);text-align:center;padding:16px 0">Chargement des données…</div>
@@ -1149,8 +1149,11 @@ window.toggleTheme=function(){
   const m=active?active.getAttribute("onclick").match(/'(\w+)'/):null;
   const t=m?m[1]:"overview";
   if(t==="overview")render();
-  if(t==="transactions"&&transacData.length)renderTransac();
-  if(t==="dividendes"&&dividData.length)renderDividendes();
+  if(t==="positions")renderPositions();
+  if(t==="transactions"){
+    if(fluxMode==="tx"&&transacData.length)renderTransac();
+    if(fluxMode==="div"&&dividData.length)renderDividendes();
+  }
   if(t==="historique"&&histoData.length)renderHisto(0);
 };
 
@@ -1677,56 +1680,65 @@ function renderAnnualPerf(){
   const empty=document.getElementById("annualPerfEmpty");
   if(!histoData.length){if(empty)empty.style.display="block";return;}
   if(empty)empty.style.display="none";
+
+  const {pnl:benefLive,val:valoLive}=totals();
+  const investiLive=valoLive-benefLive;
+  const perfLive=investiLive>0?benefLive/investiLive*100:0;
+
   const years=[...new Set(histoData.map(d=>d.date.getFullYear()))].sort();
-  const rows=[];
+  const currentYear=new Date().getFullYear();
   const pg=isDark?"#34D399":"#10B981",pr=isDark?"#F87171":"#EF4444";
+
+  // perf cumulée snapshot : benef / investi pour chaque fin d'année
+  function snapPerf(entry){
+    const inv=entry.valo-entry.benef;
+    return inv>0?entry.benef/inv*100:0;
+  }
+
+  // Construit un snapshot par année
+  const snapshots={};
   years.forEach(yr=>{
-    const isCurrentYear=yr===new Date().getFullYear();
-    const yearData=histoData.filter(d=>d.date.getFullYear()===yr);
-    if(!yearData.length)return;
-    const prevYearData=histoData.filter(d=>d.date.getFullYear()===yr-1);
-    const startEntry=prevYearData.length?prevYearData[prevYearData.length-1]:yearData[0];
-    const endEntry=yearData[yearData.length-1];
-    const startValo=startEntry.valo;
-    const simpleReturn=(endEntry.valo-startValo)/startValo*100;
-    // TRI only if transacData is available
-    let tri=null;
-    if(transacData.length){
-      const refDate=startEntry.date;
-      const cashflows=[{t:0,v:-startValo}];
-      transacData.filter(t=>t.date.getFullYear()===yr).forEach(t=>{
-        const tDays=(t.date-refDate)/(1000*60*60*24);
-        cashflows.push({t:Math.max(tDays,0.5),v:-t.montant});
-      });
-      const endDays=(endEntry.date-refDate)/(1000*60*60*24);
-      cashflows.push({t:Math.max(endDays,1),v:endEntry.valo});
-      tri=computeIRR(cashflows);
+    if(yr===currentYear){
+      snapshots[yr]=perfLive; // source live pour l'année courante
+    } else {
+      const yd=histoData.filter(d=>d.date.getFullYear()===yr);
+      if(yd.length)snapshots[yr]=snapPerf(yd[yd.length-1]);
     }
-    rows.push({yr,tri,simpleReturn,isCurrentYear});
   });
+
+  const rows=[];
+  years.forEach(yr=>{
+    if(snapshots[yr]===undefined)return;
+    const prevYr=yr-1;
+    const perfStart=snapshots[prevYr]!==undefined?snapshots[prevYr]:0;
+    const pct=snapshots[yr]-perfStart;
+    const isCurrentYear=yr===currentYear;
+    // ΔBénéfice pour afficher en €
+    const yd=histoData.filter(d=>d.date.getFullYear()===yr);
+    const endBenef=isCurrentYear?benefLive:(yd.length?yd[yd.length-1].benef:0);
+    const prevData=histoData.filter(d=>d.date.getFullYear()===yr-1);
+    const startBenef=prevData.length?prevData[prevData.length-1].benef:0;
+    rows.push({yr,pct,deltaBenef:endBenef-startBenef,isCurrentYear});
+  });
+
   if(!rows.length){if(grid)grid.innerHTML="";if(empty){empty.textContent="Données insuffisantes";empty.style.display="block";}return;}
   if(!grid)return;
   grid.innerHTML="";
-  const maxAbs=Math.max(...rows.map(r=>Math.abs(r.simpleReturn)),1);
+  const maxAbs=Math.max(...rows.map(r=>Math.abs(r.pct)),0.1);
+
   rows.slice().reverse().forEach(row=>{
-    const isPos=row.simpleReturn>=0;
+    const isPos=row.pct>=0;
     const color=isPos?pg:pr;
-    const barWidth=Math.abs(row.simpleReturn)/maxAbs*100;
+    const barWidth=Math.abs(row.pct)/maxAbs*100;
     const barColor=isPos?(isDark?"#34D399":"#10B981"):(isDark?"#F87171":"#EF4444");
-    const triStr=row.tri!==null
-      ?(row.tri*100>=0?"+":"")+(row.tri*100).toFixed(2)+"%"
-      :"—";
-    const triColor=row.tri!==null
-      ?(row.tri*100>=0?pg:pr)
-      :"var(--text4)";
     const div=document.createElement("div");
     div.className="yr-row";
     div.innerHTML=`
       <div class="yr-accent" style="background:${color}"></div>
-      <div class="yr-label">${row.yr}${row.isCurrentYear?`<div style="font-size:9px;font-weight:600;color:var(--text3);line-height:1.2">YTD</div>`:""}</div>
+      <div class="yr-label">${row.yr}${row.isCurrentYear?'<div style="font-size:9px;font-weight:600;color:var(--text3);line-height:1.2">YTD</div>':""}</div>
       <div class="yr-bar-wrap"><div class="yr-bar" style="width:0%;background:${barColor}" data-target="${barWidth}"></div></div>
-      <div class="yr-val" style="color:${color}">${isPos?"+":""}${row.simpleReturn.toFixed(2)}%</div>
-      <div class="yr-tri" style="color:${triColor}">TRI ${triStr}</div>`;
+      <div class="yr-val" style="color:${color}">${isPos?"+":""}${row.pct.toFixed(2)}%</div>
+      <div class="yr-tri" style="color:${color};opacity:.75">${row.deltaBenef>=0?"+":""}${fmt(row.deltaBenef)}</div>`;
     grid.appendChild(div);
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       const bar=div.querySelector(".yr-bar");if(bar)bar.style.width=bar.dataset.target+"%";
@@ -1928,7 +1940,9 @@ async function callClaude(mode){
 }
 
 /* ── INIT ── */
-recalc();render();fetchCours();fetchHisto();fetchTransac();
+// Ne pas appeler render() ici — les positions ont cours:0 avant fetchCours()
+// fetchCours() appellera recalc()+render() une fois les données chargées
+fetchCours();fetchHisto();fetchTransac();
 // Animate overview tab in on first load
 setTimeout(()=>{
   const ov=document.getElementById("tab-overview");
