@@ -1093,22 +1093,26 @@ const SHEET_ID="1j1dpz93jhfPNQS00a37VmAsQd7ni07caiogL7MCxVLg";
 const HISTO_GID="100093739";
 const TRANSAC_GID="2083554924";
 const DIVID_GID="239305313";
-const TICKER_MAP={"EPA:GOLD":"GOLD","EPA:ESE":"ESE","EPA:AI":"AI","EPA:EUDV":"EUDV"};
+const TICKER_MAP={"EPA:GOLD":"GOLD","EPA:ESE":"ESE","EPA:AI":"AI","EPA:EUDV":"EUDV","EPA:SU":"SU","EPA:ETZ":"ETZ","EPA:PAEEM":"PAEEM","EPA:PUST":"PUST","EPA:50E":"50E","EPA:WPEA":"WPEA"};
 const GEO_COLS={OR:"#b45309",EUROPE:"#1d4ed8",EMERGING:"#047857",USA:"#7c3aed",WORLD:"#0e7490"};
 const TYPE_COLS={ETF:"#1d4ed8",ACTION:"#7c3aed",ETC:"#b45309",OBLIGATION:"#065f46"};
 
-// Métadonnées fixes — quantite/pr/cours chargés dynamiquement depuis le sheet
-let positions=[
-  {id:1,nom:"Amundi Physical Gold ETC",secteur:"OR",type:"ETC",ticker:"GOLD",isin:"FR0013416716",quantite:0,pr:0,cours:0,varJ:0,rep:0},
-  {id:2,nom:"BNP Easy Stoxx Europe 600",secteur:"EUROPE",type:"ETF",ticker:"ETZ",isin:"FR0011550193",quantite:0,pr:0,cours:0,varJ:0,rep:0},
-  {id:3,nom:"Amundi PEA MSCI Emerging Markets ESG",secteur:"EMERGING",type:"ETF",ticker:"PAEEM",isin:"FR0013412020",quantite:0,pr:0,cours:0,varJ:0,rep:0},
-  {id:4,nom:"Amundi PEA Nasdaq-100",secteur:"USA",type:"ETF",ticker:"PUST",isin:"FR0011871110",quantite:0,pr:0,cours:0,varJ:0,rep:0},
-  {id:5,nom:"HSBC EURO STOXX 50 ETF",secteur:"EUROPE",type:"ETF",ticker:"50E",isin:"IE00B4K6B022",quantite:0,pr:0,cours:0,varJ:0,rep:0},
-  {id:6,nom:"SPDR Euro Dividend Aristocrats",secteur:"EUROPE",type:"ETF",ticker:"EUDV",isin:"IE00B5M1WJ87",quantite:0,pr:0,cours:0,varJ:0,rep:0},
-  {id:7,nom:"iShares MSCI World Swap PEA",secteur:"WORLD",type:"ETF",ticker:"WPEA",isin:"IE0002XZSHO1",quantite:0,pr:0,cours:0,varJ:0,rep:0},
-  {id:8,nom:"BNP Easy S&P 500",secteur:"USA",type:"ETF",ticker:"ESE",isin:"FR0011550185",quantite:0,pr:0,cours:0,varJ:0,rep:0},
-  {id:9,nom:"Air Liquide",secteur:"EUROPE",type:"ACTION",ticker:"AI",isin:"FR0000120171",quantite:0,pr:0,cours:0,varJ:0,rep:0},
-];
+// Métadonnées par ticker normalisé (après TICKER_MAP)
+const METADATA={
+  "GOLD": {nom:"Amundi Physical Gold ETC",        secteur:"OR",      type:"ETC",    isin:"FR0013416716"},
+  "ETZ":  {nom:"BNP Easy Stoxx Europe 600",        secteur:"EUROPE",  type:"ETF",    isin:"FR0011550193"},
+  "PAEEM":{nom:"Amundi PEA MSCI Emerging Markets", secteur:"EMERGING",type:"ETF",    isin:"FR0013412020"},
+  "PUST": {nom:"Amundi PEA Nasdaq-100",            secteur:"USA",     type:"ETF",    isin:"FR0011871110"},
+  "50E":  {nom:"HSBC EURO STOXX 50 ETF",           secteur:"EUROPE",  type:"ETF",    isin:"IE00B4K6B022"},
+  "EUDV": {nom:"SPDR Euro Dividend Aristocrats",   secteur:"EUROPE",  type:"ETF",    isin:"IE00B5M1WJ87"},
+  "WPEA": {nom:"iShares MSCI World Swap PEA",      secteur:"WORLD",   type:"ETF",    isin:"IE0002XZSHO1"},
+  "ESE":  {nom:"BNP Easy S&P 500",                 secteur:"USA",     type:"ETF",    isin:"FR0011550185"},
+  "AI":   {nom:"Air Liquide",                      secteur:"EUROPE",  type:"ACTION", isin:"FR0000120171"},
+  "SU":   {nom:"Schneider Electric",               secteur:"EUROPE",  type:"ACTION", isin:"FR0000121972"},
+};
+
+// Positions construites dynamiquement depuis le sheet — tableau vide au démarrage
+let positions=[];
 
 let charts={},histoData=[],transacData=[],dividData=[],miniMode='valo';
 let isDark=localStorage.getItem('pea-theme')==='dark';
@@ -1459,16 +1463,26 @@ function renderPositions(){
 }
 /* ── FETCH COURS ── */
 function parseCSVCours(text){
-  const map={};
-  text.trim().split("\n").slice(1).forEach(l=>{
+  const newPositions=[];
+  text.trim().split("\n").slice(1).forEach((l,idx)=>{
     const p=parseCSVLine(l);if(p.length<2)return;
-    const raw=p[0].replace(/"/g,"").trim(),ticker=TICKER_MAP[raw]||raw;
-    const cours=cleanNum(p[1]);let varJ=0,quantite=null,pr=null;
+    const raw=p[0].replace(/"/g,"").trim();
+    if(!raw||raw==="TICKER"||raw==="Ticker")return;
+    const ticker=TICKER_MAP[raw]||raw;
+    const cours=cleanNum(p[1]);if(isNaN(cours)||cours<=0)return;
+    let varJ=0,quantite=0,pr=0;
     if(p.length>=3){const v=cleanNum(p[2]);if(!isNaN(v))varJ=v;}
     if(p.length>=4){const q=cleanNum(p[3]);if(!isNaN(q)&&q>0)quantite=q;}
     if(p.length>=5){const pv=cleanNum(p[4]);if(!isNaN(pv)&&pv>0)pr=pv;}
-    if(ticker&&!isNaN(cours))map[ticker]={cours,varJ,quantite,pr};
-  });return map;
+    // METADATA s'applique toujours — source de vérité pour nom/secteur/type/isin
+    const meta=METADATA[ticker]||METADATA[raw]||{};
+    const nom    =meta.nom     ||ticker;
+    const secteur=meta.secteur ||"EUROPE";
+    const type   =meta.type    ||"ETF";
+    const isin   =meta.isin    ||"";
+    newPositions.push({id:idx+1,nom,secteur,type,ticker,isin,quantite,pr,cours,varJ,rep:0});
+  });
+  return newPositions;
 }
 async function fetchCours(){
   const icon=document.getElementById("refIcon");const dot=document.getElementById("refDot");const btn=document.getElementById("btnRef");
@@ -1480,20 +1494,21 @@ async function fetchCours(){
   const RAW="https://docs.google.com/spreadsheets/d/"+SHEET_ID+"/gviz/tq?tqx=out:csv";
   const urls=[RAW,"https://api.allorigins.win/raw?url="+encodeURIComponent(RAW),"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(RAW)];
   for(const url of urls){
-    try{const r=await fetch(url);if(!r.ok)continue;const t=await r.text();const map=parseCSVCours(t);
-      if(!Object.keys(map).length)continue;
-      positions.forEach(p=>{if(map[p.ticker]!==undefined){
-        p.cours=map[p.ticker].cours;p.varJ=map[p.ticker].varJ;
-        if(map[p.ticker].quantite!==null)p.quantite=map[p.ticker].quantite;
-        if(map[p.ticker].pr!==null)p.pr=map[p.ticker].pr;
-      }});
+    try{const r=await fetch(url);if(!r.ok)continue;const t=await r.text();
+      const newPos=parseCSVCours(t);
+      if(!newPos.length)continue;
+      // Rebuild positions array dynamically from sheet
+      positions=newPos;
       if(icon)icon.classList.remove("spinning");if(dot)dot.className="rdot green";if(btn)btn.disabled=false;
       // Update refresh timestamp
       const now=new Date();
       const ts=now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
       const hdrPnlEl=document.getElementById("hdrPnl");
-      if(hdrPnlEl){const sub=hdrPnlEl.nextElementSibling;if(sub&&sub.classList.contains("tb-refresh-time"))sub.textContent="Màj "+ts;else{const t=document.createElement("div");t.className="tb-refresh-time";t.textContent="Màj "+ts;hdrPnlEl.parentNode.insertBefore(t,hdrPnlEl.nextSibling);}}
-      recalc();render();return;
+      if(hdrPnlEl){const sub=hdrPnlEl.nextElementSibling;if(sub&&sub.classList.contains("tb-refresh-time"))sub.textContent="Màj "+ts;else{const t2=document.createElement("div");t2.className="tb-refresh-time";t2.textContent="Màj "+ts;hdrPnlEl.parentNode.insertBefore(t2,hdrPnlEl.nextSibling);}}
+      recalc();render();
+      // Update annual perf if histo loaded
+      if(histoData.length)renderAnnualPerf();
+      return;
     }catch(e){continue;}
   }
   if(heroCard)heroCard.removeAttribute("data-loading");
