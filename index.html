@@ -223,27 +223,20 @@ body::before{
   font-family:'Inter',sans-serif;
   letter-spacing:.01em;
   min-height:52px;cursor:pointer;
-  transition:color .2s;
+  transition:color .2s,background .2s,box-shadow .2s,transform .15s;
 }
 .nb.active{
   color:var(--text);
-  background:linear-gradient(180deg, color-mix(in srgb, var(--blue) 18%, var(--surface) 82%), color-mix(in srgb, var(--surface) 94%, transparent));
+  background:linear-gradient(180deg, color-mix(in srgb, var(--blue) 28%, var(--surface) 72%), color-mix(in srgb, var(--blue) 10%, var(--surface) 90%));
   border-radius:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 8px 18px rgba(37,99,235,.16);
 }
 .nb svg{
   width:21px;height:21px;stroke:currentColor;fill:none;
   stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
-  transition:stroke-width .15s;
+  transition:stroke-width .15s,transform .15s;
 }
-.nb.active svg{stroke-width:2.2}
-/* Active indicator dot */
-.nb.active::after{
-  content:'';
-  position:absolute;
-  bottom:4px;
-  width:4px;height:4px;border-radius:50%;
-  background:var(--blue);
-}
+.nb.active svg{stroke-width:2.2;transform:translateY(-1px)}
 .nb{position:relative}
 
 /* ═══════════════════════════════════════════════════
@@ -1060,11 +1053,15 @@ select:focus-visible{
 
 @media (display-mode: standalone){
   #botnav{
-    width:min(100%,var(--app-w));
+    left:0;
+    right:0;
+    transform:none;
+    width:100%;
     border-left:none;
     border-right:none;
     border-bottom:none;
     border-radius:22px 22px 0 0;
+    padding-bottom:max(env(safe-area-inset-bottom,0px),6px);
   }
 }
 
