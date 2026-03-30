@@ -202,7 +202,7 @@ body::before{
 #botnav{
   position:fixed;left:50%;transform:translateX(-50%);z-index:100;
   width:min(calc(100% - 18px),calc(var(--app-w) - 18px));
-  bottom:max(env(safe-area-inset-bottom,0px),10px);
+  bottom:env(safe-area-inset-bottom,0px);
   background:var(--chrome);
   backdrop-filter:blur(24px) saturate(200%);
   -webkit-backdrop-filter:blur(24px) saturate(200%);
@@ -364,7 +364,7 @@ body::before{
 .kc{
   position:relative;overflow:hidden;
   border-radius:22px;
-  padding:16px 15px 14px;
+  padding:16px 15px 14px 18px;
   background:color-mix(in srgb, var(--surface) 90%, transparent);border:1px solid var(--border);
   box-shadow:var(--card-shadow);
   transition:background .3s,border-color .3s,transform .18s ease,box-shadow .18s ease;
@@ -379,8 +379,8 @@ body::before{
 }
 .kc:hover{transform:translateY(-1px);box-shadow:var(--card-shadow-soft)}
 .kc-accent{
-  position:absolute;top:0;left:0;right:0;
-  height:3px;border-radius:var(--r-xl) var(--r-xl) 0 0;
+  position:absolute;left:0;top:0;bottom:0;
+  width:4px;border-radius:22px 0 0 22px;
 }
 .kc-label{
   font-family:'Manrope',sans-serif;
@@ -1058,6 +1058,16 @@ select:focus-visible{
   }
 }
 
+@media (display-mode: standalone){
+  #botnav{
+    width:min(100%,var(--app-w));
+    border-left:none;
+    border-right:none;
+    border-bottom:none;
+    border-radius:22px 22px 0 0;
+  }
+}
+
 @media (max-width:420px){
   .analytics-grid,
   .kpi-grid{
@@ -1141,19 +1151,6 @@ select:focus-visible{
       </div>
     </div>
 
-    <div class="analytics-grid">
-      <div class="stat-panel">
-        <div class="stat-label">Ligne dominante</div>
-        <div class="stat-value" id="overviewTopLine">—</div>
-        <div class="stat-sub" id="overviewTopLineSub">Allocation principale</div>
-      </div>
-      <div class="stat-panel">
-        <div class="stat-label">Moteur du jour</div>
-        <div class="stat-value" id="overviewTopMove">—</div>
-        <div class="stat-sub" id="overviewTopMoveSub">Impact journalier</div>
-      </div>
-    </div>
-
     <!-- Hero Card -->
     <div id="heroCard">
       <div class="hero-label">Valeur du portefeuille</div>
@@ -1199,6 +1196,19 @@ select:focus-visible{
           <span style="display:flex;align-items:center;gap:4px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#16a34a"></i>0→+2%</span>
           <span style="display:flex;align-items:center;gap:4px"><i style="width:9px;height:9px;border-radius:2px;display:inline-block;background:#b91c1c"></i>Négatif</span>
         </div>
+      </div>
+    </div>
+
+    <div class="analytics-grid">
+      <div class="stat-panel">
+        <div class="stat-label">Ligne dominante</div>
+        <div class="stat-value" id="overviewTopLine">—</div>
+        <div class="stat-sub" id="overviewTopLineSub">Allocation principale</div>
+      </div>
+      <div class="stat-panel">
+        <div class="stat-label">Moteur du jour</div>
+        <div class="stat-value" id="overviewTopMove">—</div>
+        <div class="stat-sub" id="overviewTopMoveSub">Impact journalier</div>
       </div>
     </div>
 
