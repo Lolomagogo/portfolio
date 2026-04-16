@@ -25,6 +25,7 @@
 ═══════════════════════════════════════════════════ */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden}
+html{background:var(--bg)}
 body{
   font-family:'Inter',system-ui,sans-serif;
   font-size:14px;
@@ -210,7 +211,7 @@ body::before{
   border-radius:22px;
   box-shadow:var(--card-shadow-soft);
   display:flex;
-  padding:6px 6px max(env(safe-area-inset-bottom,0px),6px);
+  padding:6px;
   transition:background .3s;
 }
 .nb{
@@ -1061,7 +1062,8 @@ select:focus-visible{
     border-left:none;
     border-right:none;
     border-bottom:none;
-    border-radius:22px 22px 0 0;
+    border-radius:18px 18px 0 0;
+    padding:6px 6px env(safe-area-inset-bottom,0px);
   }
 }
 
@@ -1521,6 +1523,7 @@ const GEO_COLS={OR:"#b45309",EUROPE:"#1d4ed8",EMERGING:"#047857",USA:"#7c3aed",W
 const TYPE_COLS={ETF:"#1d4ed8",ACTION:"#7c3aed",ETC:"#b45309",OBLIGATION:"#065f46"};
 const MONTHS_FR=["","Jan","Fév","Mar","Avr","Mai","Juin","Juil","Aoû","Sep","Oct","Nov","Déc"];
 const CACHE_PREFIX="pea-cache-v1";
+const DIVID_REFRESH_MS=60*60*1000;
 
 // Métadonnées par ticker normalisé (après TICKER_MAP)
 const METADATA={
@@ -1569,6 +1572,10 @@ function loadCache(name){
   }catch(e){
     return null;
   }
+}
+function isCacheStale(name,maxAgeMs){
+  const cache=loadCache(name);
+  return !cache?.savedAt || (Date.now()-cache.savedAt)>maxAgeMs;
 }
 function setTopbarRefresh(ts,label="Màj"){
   const hdrPnlEl=document.getElementById("hdrPnl");
@@ -2264,6 +2271,10 @@ async function fetchDividendes(){
   }
   const el=document.getElementById("divErr");if(el)el.textContent="Impossible de charger les dividendes.";
 }
+async function ensureDividendesFresh({force=false,renderCached=false}={}){
+  if(renderCached&&dividData.length)renderDividendes();
+  if(force||!dividData.length||isCacheStale("divid",DIVID_REFRESH_MS))return fetchDividendes();
+}
 function renderDividendes(){
   if(!dividData.length)return;
   const total=dividData.reduce((s,d)=>s+d.montant,0);
@@ -2382,8 +2393,7 @@ function switchFlux(mode){
   document.getElementById("fluxPanelTx").classList.toggle("hidden",mode!=="tx");
   document.getElementById("fluxPanelDiv").classList.toggle("hidden",mode!=="div");
   if(mode==="div"){
-    if(!dividData.length)fetchDividendes();
-    else renderDividendes();
+    ensureDividendesFresh({renderCached:true});
   }
 }
 
@@ -2411,7 +2421,7 @@ function showTab(name,el){
       if(name==="positions")renderPositions();
       if(name==="transactions"){
         if(!transacData.length)fetchTransac();else renderTransac();
-        if(fluxMode==="div"&&!dividData.length)fetchDividendes();
+        if(fluxMode==="div")ensureDividendesFresh({renderCached:true});
       }
       if(name==="historique"){if(!histoData.length)fetchHisto();else renderHisto(0);}
     },120);
@@ -2423,6 +2433,7 @@ function showTab(name,el){
     if(name==="positions")renderPositions();
     if(name==="transactions"){
       if(!transacData.length)fetchTransac();else renderTransac();
+      if(fluxMode==="div")ensureDividendesFresh({renderCached:true});
     }
     if(name==="historique"){if(!histoData.length)fetchHisto();else renderHisto(0);}
   }
@@ -2454,6 +2465,7 @@ async function callClaude(mode){
 // fetchCours() appellera recalc()+render() une fois les données chargées
 hydrateFromCache();
 fetchCours();fetchHisto();fetchTransac();
+ensureDividendesFresh();
 // Animate overview tab in on first load
 setTimeout(()=>{
   const ov=document.getElementById("tab-overview");
@@ -2463,7 +2475,7 @@ setInterval(fetchCours,5*60*1000);
 
 // Pause polling when page is hidden (battery/background)
 document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="visible")fetchCours();
+  if(document.visibilityState==="visible"){fetchCours();ensureDividendesFresh();}
 });
 
 window.addEventListener("resize",()=>{
@@ -2511,7 +2523,7 @@ window.addEventListener("resize",()=>{
     ptr.classList.remove("ptr-trigger");
     ptr.classList.add("ptr-loading");
     ptrLabel.textContent="Actualisation…";
-    await fetchCours();
+    await Promise.all([fetchCours(),ensureDividendesFresh({force:true})]);
     ptr.classList.remove("ptr-visible","ptr-loading");
     ptrLabel.textContent="Tirer pour actualiser";
     refreshing=false;
